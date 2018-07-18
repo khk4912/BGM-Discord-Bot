@@ -81,7 +81,6 @@ def checkpm25(n):
         return ""
 
 async def nmt(source, target, string):
-    print("https://openapi.naver.com/v1/papago/n2mt?source={source}&target={target}&text={string}".format(source=source, target=target, string=string))
     headers = {"X-Naver-Client-Id" : TOKEN.papago_nmt_id, "X-Naver-Client-Secret" : TOKEN.papago_nmt_secret}
     data = {"source":source, "target":target, "text":string}
     try:
@@ -101,7 +100,7 @@ async def smt(source, target, string):
     data = {"source":source, "target":target, "text":string}
     try:
         async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post("https://openapi.naver.com/v1/papago/n2mt", data=data) as r:
+            async with session.post("https://openapi.naver.com/v1/language/translate", data=data) as r:
                     if r.status == 200:
                         c = await r.json()
                         translated = c["message"]["result"]["translatedText"]
@@ -701,6 +700,87 @@ class chatting(Command):
                 await message.channel.send(embed=embed)
 
 
+        if message.content.startswith("봇 일어한글번역"):
+            a = message.content[8:].lstrip()
+            trans = await nmt("ja", "ko", a)
+            if trans is None:
+                embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
+            else:
+                embed=discord.Embed(title="✅ 한글 번역", description=trans,color=0x1dc73a )
+                await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 한글일어번역"):
+            a = message.content[8:].lstrip()
+            trans = await nmt("ko", "ja", a)
+            if trans is None:
+                embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
+            else:
+                embed=discord.Embed(title="✅ 한글 번역", description=trans,color=0x1dc73a )
+                await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 자동번역"):
+            a = message.content[6:].lstrip()
+            headers = {"X-Naver-Client-Id" : TOKEN.papago_detect_id, "X-Naver-Client-Secret" : TOKEN.papago_detect_secret}
+            data = {"query":a}
+            try:
+                async with aiohttp.ClientSession(headers=headers) as session:
+                    async with session.post("https://openapi.naver.com/v1/papago/detectLangs", data=data) as r:
+                            if r.status == 200:
+                                c = await r.json()
+                                langcode = c["langCode"]
+                                langcode = langcode.replace("zh-cn","zh-CN")           
+                                langcode = langcode.replace("zh-tw","zh-TW")           
+
+                                if langcode == "ko":
+                                    embed=discord.Embed(title="⚠ 주의", description="언어가 한국어로 감지되었습니다. 한국어가 많이 섞여있다면 한국어를 삭제해보시고 다시 시도해주세요." ,color=0xd8ef56)
+                                    await message.channel.send(embed=embed)
+
+
+
+                                else:
+                                    trans = await nmt(langcode, "ko", a)
+                                    if trans is None:
+                                        embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
+                                        await message.channel.send(embed=embed)
+                                    else:
+                                        embed=discord.Embed(title="✅ 자동 번역", description=trans,color=0x1dc73a )
+                                        embed.set_footer(text=langcode + " >> ko")
+                                        await message.channel.send(embed=embed)
+
+                            else:
+                                embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
+                                await message.channel.send(embed=embed)
+            except:
+                embed=discord.Embed(title="❌ 오류 발생", description="언어 감지에 오류가 발생하였습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 백과사전"):
+            a = message.content[6:].lstrip()
+            headers = {"X-Naver-Client-Id" : TOKEN.search_id, "X-Naver-Client-Secret" : TOKEN.search_secret}
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.get("https://openapi.naver.com/v1/search/encyc.json?query=" + a) as r:
+                    c = await r.text()
+                    print(c)
+                    c = json.loads(c)
+                    a = c['items'][0]     
+                    
+                    title = a['title']
+                    title = htmltotext(title)
+                    link = a['link']
+                    thumbnail = a['thumbnail']
+                    description = a['description']
+                    description = htmltotext(description)
+                    embed=discord.Embed(title="🔖 백과사전", description="**" + title+ "**에 대한 검색결과.", color=0x237ccd)
+                    embed.add_field(name="내용", value=description, inline=False)
+                    embed.add_field(name="자세히 읽기", value=link, inline=False)
+                    embed.set_image(url=thumbnail)
+
+                    await message.channel.send(embed=embed)
+
+
+
         # if message.content.startswith('봇 재시작'):
         #     if message.author.id == 289729741387202560:
 
@@ -708,6 +788,7 @@ class chatting(Command):
         #             embed=discord.Embed(title="봇 재시작", description="봇이 재시작 합니다.",color=0x237ccd )
         #             await message.channel.send(embed=embed)
         #             restart_bot()
+
         #         except Exception as error :
         #             embed=discord.Embed(title="❌ 경고", description="재시작 중 오류가 발생하였습니다. %s" %(error),color=0xff0909)
         #             await message.channel.send(embed=embed)
