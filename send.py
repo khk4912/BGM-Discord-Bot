@@ -1,6 +1,5 @@
 import discord
-
-
+import TOKEN
 class CommandInto(type):
 
     def __init__(cls, name, bases, attrs):
@@ -13,8 +12,7 @@ class CommandInto(type):
 class Command(object, metaclass=CommandInto):
 
     def __init__(self, bot):
-        self.client = bot
-
+        self.client = bot 
 
     async def _send(self,message):
         await self.on_message(message)

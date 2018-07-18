@@ -7,7 +7,9 @@ import sys
 import aiohttp
 import asyncio
 import requests 
+import json 
 
+import TOKEN
 from send import Command
 
 '''
@@ -46,6 +48,68 @@ def lxml_string(soup, tag):
             return find
     except:
         return "정보 없음."
+
+
+def checkpm10(n):
+    try:
+        n = int(n)
+        if n >= 0 and n < 31:
+            return "좋음"
+        elif n >= 31 and n < 81:
+            return "보통"
+        elif n >= 80 and n < 151:
+            return "`나쁨`"
+        elif n >= 151:
+            return "**`매우 나쁨`**" 
+
+    except:
+        return ""
+
+def checkpm25(n):
+    try:
+        n = int(n)
+        if n >= 0 and n < 16:
+            return "좋음"
+        elif n >= 16 and n < 36:
+            return "보통"
+        elif n >= 36 and n < 76:
+            return "`나쁨`"
+        elif n >= 76:
+            return "**`매우 나쁨`**" 
+
+    except:
+        return ""
+
+async def nmt(source, target, string):
+    print("https://openapi.naver.com/v1/papago/n2mt?source={source}&target={target}&text={string}".format(source=source, target=target, string=string))
+    headers = {"X-Naver-Client-Id" : TOKEN.papago_nmt_id, "X-Naver-Client-Secret" : TOKEN.papago_nmt_secret}
+    data = {"source":source, "target":target, "text":string}
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.post("https://openapi.naver.com/v1/papago/n2mt", data=data) as r:
+                    if r.status == 200:
+                        c = await r.json()
+                        translated = c["message"]["result"]["translatedText"]
+                        return translated
+                    else:
+                        return r.status
+    except:
+        return None                
+
+async def smt(source, target, string):
+    headers = {"X-Naver-Client-Id" : TOKEN.papago_smt_id, "X-Naver-Client-Secret" : TOKEN.papago_smt_secret}
+    data = {"source":source, "target":target, "text":string}
+    try:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.post("https://openapi.naver.com/v1/papago/n2mt", data=data) as r:
+                    if r.status == 200:
+                        c = await r.json()
+                        translated = c["message"]["result"]["translatedText"]
+                        return translated
+                    else:
+                        return r.status
+    except:
+        return None                
 
 class chatting(Command):
     
@@ -436,7 +500,7 @@ class chatting(Command):
             if "@everyone" in message.content or "@here" in message.content:
                 embed=discord.Embed(title="⚠ 경고", description="`@everyone`이나 `@here`은 다른 사용자에게 피해를 줄 수 있습니다.\n사용이 제한됩니다." ,color=0xff0909 )
                 embed.set_footer(text=message.author)
-                await message.channdddel.send(embed=embed)
+                await message.channel.send(embed=embed)
             else:
                 a = message.content
                 a = a[4:]
@@ -519,15 +583,16 @@ class chatting(Command):
                     name = message.content[6:].lstrip()
                     if name == "":
                         for i in sido.keys():
-                            embed.add_field(name=i, value=str(sido[i]), inline=True)
+                            embed.add_field(name=i, value="%s㎍/m³ | %s" %(sido[i], checkpm10(sido[i])), inline=True)
                         await message.channel.send(embed=embed)
                     else:
                         if name in sido.keys():
-                            embed.add_field(name=name, value=str(sido[name]), inline=True)
+                            embed.add_field(name=name, value="%s㎍/m³ | %s" %(sido[name], checkpm10(sido[name])), inline=True)
                             await message.channel.send(embed=embed)
                         else:
-                            embed=discord.Embed(title="⚠ 주의", description="지역 이름이 없습니다. 광역자치단체 기준으로 불러오며, 도는 줄인 이름으로, 광역시는 `광역시` 글자를 제거해주세요.\n\n```ex) 경북, 경기, 서울, 광주...```",color=0xd8ef56)
+                            embed=discord.Embed(title="⚠ 주의", description="지역 이름이 없습니다. 시·도별기준으로 불러오며, 도는 줄인 이름으로, 광역시는 `광역시` 글자를 제거해주세요.\n\n```ex) 경북, 경기, 서울, 광주...```",color=0xd8ef56)
                             await message.channel.send(embed=embed)
+
 
         if message.content.startswith("봇 초미세먼지"):
             async with aiohttp.ClientSession() as session:
@@ -559,15 +624,81 @@ class chatting(Command):
                     name = message.content[7:].lstrip()
                     if name == "":
                         for i in sido.keys():
-                            embed.add_field(name=i, value=str(sido[i]), inline=True)
+                            embed.add_field(name=i, value="%s㎍/㎥ | %s" %(sido[i], checkpm25(sido[i])), inline=True)
                         await message.channel.send(embed=embed)
                     else:
                         if name in sido.keys():
-                            embed.add_field(name=name, value=str(sido[name]), inline=True)
+                            embed.add_field(name=name, value="%s㎍/㎥ | %s" %(sido[name], checkpm25(sido[name])), inline=True)
                             await message.channel.send(embed=embed)
                         else:
-                            embed=discord.Embed(title="⚠ 주의", description="지역 이름이 없습니다. 광역자치단체 기준으로 불러오며, 도는 줄인 이름으로, 광역시는 `광역시` 글자를 제거해주세요.\n\n```ex) 경북, 경기, 서울, 광주...```",color=0xd8ef56)
+                            embed=discord.Embed(title="⚠ 주의", description="지역 이름이 없습니다. 시·도별기준으로 불러오며, 도는 줄인 이름으로, 광역시는 `광역시` 글자를 제거해주세요.\n\n```ex) 경북, 경기, 서울, 광주...```",color=0xd8ef56)
                             await message.channel.send(embed=embed)
+        if message.content.startswith("봇 프사"):
+            memberid = message.content[4:].lstrip()
+            memberid = memberid.replace("<@", "")
+            memberid = memberid.replace("!", "")
+            memberid = memberid.replace(">", "")
+            if memberid == "":
+                memberid = message.author.id
+                member = message.guild.get_member(memberid)
+                a = member.avatar_url
+                if a == "":
+                    a = member.default_avatar_url
+                embed=discord.Embed(title="🖼️ 프로필 사진", description="",color=0x62bf42)
+
+                embed.set_image(url=a)
+                await message.channel.send(embed=embed)
+                
+            else:
+                memberid = int(memberid)
+
+                member = message.guild.get_member(memberid)
+                a = member.avatar_url
+                if a == "":
+                    a = member.default_avatar_url
+                embed=discord.Embed(title="🖼️ 프로필 사진", description="",color=0x62bf42)
+
+                embed.set_image(url=a)
+                await message.channel.send(embed=embed)
+        
+        
+        if message.content.startswith("봇 한강"):
+            async with aiohttp.ClientSession() as session:
+                async with session.get("http://hangang.dkserver.wo.tc/") as r:
+
+                    ondo = await r.text()
+                    ondo = json.loads(ondo)
+                    if ondo['result'] == "true":
+                        temp = ondo['temp']
+                        h = ondo['time']
+                        embed=discord.Embed(title="🌡 한강 현재수온", description= temp + "°C\n",color=0x62bf42)
+                        embed.add_field(name="🕐 기준시각", value=h, inline=True)
+                        embed.set_footer(text="퐁당!")
+                        await message.channel.send(embed=embed)
+                    else:
+                        embed=discord.Embed(title="❌ 오류 발생", description="API에서 정보를 제공하지 않습니다.",color=0xff0909)
+                        await message.channel.send(embed=embed)
+
+
+        if message.content.startswith("봇 영어한글번역"):
+            a = message.content[8:].lstrip()
+            trans = await nmt("en", "ko", a)
+            if trans is None:
+                embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
+            else:
+                embed=discord.Embed(title="✅ 한글 번역", description=trans,color=0x1dc73a )
+                await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 한글영어번역"):
+            a = message.content[8:].lstrip()
+            trans = await nmt("ko", "en", a)
+            if trans is None:
+                embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
+            else:
+                embed=discord.Embed(title="✅ 영어 번역", description=trans,color=0x1dc73a )
+                await message.channel.send(embed=embed)
 
 
         # if message.content.startswith('봇 재시작'):
@@ -584,5 +715,3 @@ class chatting(Command):
         #         embed=discord.Embed(title="⚠ 주의", description="봇 오너만 사용 가능한 명령어입니다.",color=0xd8ef56)
         #         await message.channel.send(embed=embed)
 
-
-        
