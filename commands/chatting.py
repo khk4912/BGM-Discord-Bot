@@ -8,6 +8,8 @@ import aiohttp
 import asyncio
 import requests 
 import json 
+import time
+
 
 import TOKEN
 from send import Command
@@ -91,7 +93,7 @@ async def nmt(source, target, string):
                         translated = c["message"]["result"]["translatedText"]
                         return translated
                     else:
-                        return r.status
+                        return None
     except:
         return None                
 
@@ -106,7 +108,7 @@ async def smt(source, target, string):
                         translated = c["message"]["result"]["translatedText"]
                         return translated
                     else:
-                        return r.status
+                        return None
     except:
         return None                
 
@@ -632,6 +634,7 @@ class chatting(Command):
                         else:
                             embed=discord.Embed(title="⚠ 주의", description="지역 이름이 없습니다. 시·도별기준으로 불러오며, 도는 줄인 이름으로, 광역시는 `광역시` 글자를 제거해주세요.\n\n```ex) 경북, 경기, 서울, 광주...```",color=0xd8ef56)
                             await message.channel.send(embed=embed)
+
         if message.content.startswith("봇 프사"):
             memberid = message.content[4:].lstrip()
             memberid = memberid.replace("<@", "")
@@ -717,7 +720,7 @@ class chatting(Command):
                 embed=discord.Embed(title="❌ 오류 발생", description="번역에 오류가 발생하였습니다.",color=0xff0909)
                 await message.channel.send(embed=embed)
             else:
-                embed=discord.Embed(title="✅ 한글 번역", description=trans,color=0x1dc73a )
+                embed=discord.Embed(title="✅ 일본어 번역", description=trans,color=0x1dc73a )
                 await message.channel.send(embed=embed)
 
         if message.content.startswith("봇 자동번역"):
@@ -778,6 +781,282 @@ class chatting(Command):
                     embed.set_image(url=thumbnail)
 
                     await message.channel.send(embed=embed)
+
+
+
+        if message.content.startswith("봇 링크축약") or message.content.startswith("봇 링크단축") or message.content.startswith("봇 주소단축") or message.content.startswith("봇 주소축약"):
+            a = message.content[6:].lstrip()
+            headers = {"X-Naver-Client-Id" : TOKEN.url_id, "X-Naver-Client-Secret" : TOKEN.url_secret}
+            data = {"url":a}
+            try:
+                async with aiohttp.ClientSession(headers=headers) as session:
+                    async with session.post("https://openapi.naver.com/v1/util/shorturl", data=data) as r:
+                            if r.status == 200:
+                                c = await r.json()
+                                url = c["result"]["url"]
+                                embed=discord.Embed(title="✅ 링크 축약", description="링크 축약을 성공하였습니다.",color=0x1dc73a )
+                                embed.add_field(name="처음 URL", value=a)
+                                embed.add_field(name="단축된 URL", value=url)
+                                await message.channel.send(embed=embed)
+                            else:
+                                embed=discord.Embed(title="❌ 오류 발생", description="정상적인 값이 출력되지 않았습니다. 나중에 다시 시도해주세요.\nHTTP CODE : %s" %(r.status),color=0xff0909)
+                                await message.channel.send(embed=embed)
+
+            except:
+                embed=discord.Embed(title="❌ 오류 발생", description="단축에 오류가 발생하였습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 나무위키"):
+            a = message.content
+            a = a[7:]
+            title = a
+            a = "http://namu.wiki/w/" + a.replace(" ","%20")
+            async with aiohttp.ClientSession() as session:
+                async with session.get(a) as r:
+                    if r.status == 404:
+                        embed=discord.Embed(title="", description="없는 문서입니다.", color=0x1dc73a)
+                        embed.set_author(name="문서를 찾을 수 없습니다.", icon_url="https://i.imgur.com/FLN2B5H.png")
+                        await message.channel.send(embed=embed)
+                    else:
+                        data = await r.text()
+                        soup = BeautifulSoup(data,"html.parser")
+                        d = soup.find("div", {"class":"wiki-inner-content"}).text
+                        content = htmltotext(d)[:150]
+                        embed=discord.Embed(title="", description=content+"...", color=0x1dc73a)
+                        embed.add_field(name="바로가기", value="[여기](%s)를 클릭하세요. " %(a))
+                        embed.set_author(name=title, icon_url="https://i.imgur.com/FLN2B5H.png")
+                        await message.channel.send(embed=embed)
+    
+        if message.content.startswith("봇 서버리스트"):
+            
+            a = ""
+            user = 0
+            server = []
+            for s in self.client.guilds:
+                a = a + "`" + s.name + "`" + "\n"
+                user += s.member_count
+                # embed.add_field(name="\n", value=s.name, inline=False)
+            embed=discord.Embed(title="🗒 서버리스트", description=a, color=0x1dc73a)
+            embed.set_footer(text="봇이 동작하는 서버는 %s개 입니다.\n중복 유저수는 %s명 입니다." %(str(len(self.client.guilds)),user))
+
+            try:
+                await message.author.send(embed=embed)
+                embed=discord.Embed(title="✅ 서버리스트", description="DM 전송 완료!", color=0x1dc73a )
+                await message.channel.send(embed=embed)
+            except:
+                embed=discord.Embed(title="❌ 오류 발생", description="DM 전송에 실패했습니다. 계정의 DM 설정을 확인해주세요.",color=0xff0909)
+                await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 프레타는?"):
+            send = ["??? : 그말 꺼내지 마세요.", "???", "@.@", "불-편", "안사요"]
+            await message.channel.send(random.choice(send))
+
+        if message.content.startswith('봇 냥이') or message.content.startswith("봇 고양이"):
+            while True:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("http://aws.random.cat/meow") as r:
+                        try:
+                            data = await r.text()
+                            data = json.loads(data)
+                            break
+                        except:
+                            pass
+            file = data["file"]
+            embed=discord.Embed(title=" ",color=0xf2e820)
+            embed.set_image(url=file)
+            embed.set_footer(text="http://random.cat")
+            await message.channel.send(embed=embed)
+
+        if message.content.startswith('봇 강아지') or message.content.startswith("봇 댕댕이"):
+            async with aiohttp.ClientSession() as session:
+                    async with session.get("http://random.dog/woof.json") as r:
+                        data = await r.json()
+                        file = data["url"]
+                        embed=discord.Embed(title=" ",color=0xf2e820)
+                        embed.set_image(url=file)
+                        embed.set_footer(text="http://random.dog")
+                        await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 네이버 실검") or message.content.startswith("봇 네이버 실시간검색어") or message.content.startswith("봇 네이버 실시간 검색어") or message.content.startswith("봇 네이버실검"):
+            async with aiohttp.ClientSession() as session:
+                    async with session.get("http://naver.com") as r:
+                        c = await r.text()
+                # s = "%04d-%02d-%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+                        now = time.localtime()
+                        now = "%04d-%02d-%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+
+                        soup = BeautifulSoup(c,"html.parser")
+                        embed=discord.Embed(title="✅ 네이버 실시간 검색어", description=now + " 기준 네이버 실시간 검색어입니다. \n\n　", color=0x1dc73a)
+                        number = 0
+                        for i in soup.find_all("span",{"class":"ah_k"}):
+                            try:
+                                number = number + 1
+                                print(i.text)
+                                
+                                embed.add_field(name=str(number) + "위", value=i.text, inline=False)
+                                if number == 10:
+                                    break
+
+                            except:
+                                pass
+                        await message.channel.send(embed=embed)
+
+
+        if message.content.startswith("봇 다음 실검") or message.content.startswith("봇 다음 실시간검색어") or message.content.startswith("봇 다음 실시간 검색어") or message.content.startswith("봇 다음실검"):
+            async with aiohttp.ClientSession() as session:
+                    async with session.get("http://m.daum.net") as r:
+                        c = await r.text()
+                # s = "%04d-%02d-%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+                        now = time.localtime()
+                        now = "%04d-%02d-%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+
+                        soup = BeautifulSoup(c,"html.parser")
+                        soup = soup.find("ol",{"class":"list_issue #hotissue list_realtime"})
+                        embed=discord.Embed(title="☑ 다음 실시간 검색어", description=now + " 기준 다음 실시간 검색어입니다. \n\n　", color=0x0089ff)
+                        number = 0
+                        for i in soup.find_all("span",{"class":"txt_issue"}):
+                            try:
+                                number = number + 1
+                                print(i.text)
+                                
+                                embed.add_field(name=str(number) + "위", value=i.text, inline=False)
+                                if number == 10:
+                                    break
+
+                            except:
+                                pass
+                        await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 이 서버는?") or message.content.startswith("봇 서버정보"):
+            number = 0
+            nonadminserver = []
+            date = "%s (UTC)"% message.guild.created_at
+            for i in message.guild.members:
+                number = number + 1
+            sunsunumber = 0
+            for i in message.guild.members:
+                if i.bot == False:
+                    sunsunumber = sunsunumber + 1
+            s = message.guild
+            if s.get_member(self.client.user.id).guild_permissions.administrator == False:
+                clear = "정리 대상 입니다."
+
+            else:
+
+                clear = "정리 대상이 아닙니다."
+                try:
+                    welcome = message.guild.system_channel.name
+                    if welcome == "" or welcome is None:
+                        welcome = "존재하지 않습니다."
+                except:
+                    welcome = "존재하지 않습니다."
+                
+                embed=discord.Embed(title="ℹ️ 서버 정보", description="이 서버에 대한 정보를 불러왔습니다.\n\n" , color=0x1dc73a)
+                embed.add_field(name="이름", value=message.guild.name, inline=False)
+                embed.add_field(name="서버 ID", value=message.guild.id, inline=True)
+                embed.add_field(name="서버 인원", value=number, inline=True)
+                embed.add_field(name="순수 서버 인원 (봇 제외)", value=sunsunumber, inline=False)
+
+                embed.add_field(name="서버 생성일", value=date, inline=True)
+                embed.add_field(name="서버 오너", value=message.guild.owner, inline=False)
+                embed.add_field(name="봇 정리 대상", value=clear, inline=True)
+                embed.add_field(name="웰컴 채널", value="#" + welcome, inline=False)
+                embed.add_field(name="서버 위치", value=message.guild.region, inline=True)
+
+                embed.set_thumbnail(url=message.guild.icon_url)
+                await message.channel.send(embed=embed)
+
+
+
+
+        if message.content.startswith("봇 유저정보"):
+            a = message.content
+            a = a[7:]        
+            if a == "":
+                a = message.author.id
+            try:
+                a = a.replace("<", "")
+                a = a.replace("@", "")
+                a = a.replace("!", "")
+                a = a.replace(">", "") 
+                a = int(a)
+            except:
+                pass
+            date = "%s (UTC)"% message.guild.get_member(a).created_at
+            try:
+                game = message.guild.get_member(a).activity.name
+            except:
+                game = "플레이 중인 게임이 없습니다."
+            if game is None:
+                game = "플레이 중인 게임이 없습니다."
+            member =message.guild.get_member(a)
+            status = message.guild.get_member(a).status
+            joined = str(message.guild.get_member(a).joined_at)
+            if status == discord.Status.online:
+                status = "온라인"
+            elif status == discord.Status.idle:
+                status = "자리비움"
+            elif status == discord.Status.dnd:
+                status = "다른 용무 중"
+            elif status == discord.Status.offline:
+                status = "오프라인"
+            else:
+                status = "알 수 없음."
+
+            asdf = member.avatar_url
+            if asdf == "":
+                asdf = member.default_avatar_url
+
+            embed=discord.Embed(title="ℹ️ 유저 정보", description="선택하신 유저에 대한 정보를 불러왔습니다.\n\n" , color=0x1dc73a)
+            embed.add_field(name="이름", value=message.guild.get_member(a).name, inline=False)
+            embed.add_field(name="유저 ID", value=message.guild.get_member(a).id, inline=True)
+            embed.add_field(name="계정 생성일", value=date, inline=True)
+            embed.add_field(name="서버 가입일", value=joined + " (UTC)", inline=False)
+            
+            embed.add_field(name="플레이 중", value=game, inline=True)
+            embed.add_field(name="상태", value=status, inline=False)
+
+            embed.set_thumbnail(url=asdf)
+            await message.channel.send(embed=embed)
+
+
+
+        if message.content.startswith("봇 멜론차트"):
+            async with aiohttp.ClientSession() as session:
+
+                async with session.get("https://music.cielsoft.me/api/getchart/melon") as r:
+
+                    c = await r.text()
+                    c = json.loads(c)
+                    embed=discord.Embed(title="🎵 멜론 차트", description="멜론에서 TOP10 차트를 불러왔어요.",color=0x62bf42)
+                    for i in range(11):
+                        embed.add_field(name="TOP" + str(i+1),value=c[i]["title"] + " / " + c[i]["artist"])
+                    await message.channel.send(embed=embed)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
