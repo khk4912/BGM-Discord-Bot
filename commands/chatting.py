@@ -1021,7 +1021,7 @@ class chatting(Command):
 
 
 
-        if message.content.startswith("봇 멜론차트"):
+        if message.content.startswith("봇 멜론차트") or message.content.startswith("봇 맬론차트"):
             async with aiohttp.ClientSession() as session:
 
                 async with session.get("https://music.cielsoft.me/api/getchart/melon") as r:
@@ -1034,9 +1034,18 @@ class chatting(Command):
                     await message.channel.send(embed=embed)
 
 
+        if message.content.startswith("봇 질문"):
+            response = ["절대 아닙니다.","잘 모르겠네요.","아마 아닐 것 같아요.","확실합니다.","네","아니오","그럴겁니다.","아마 맞을겁니다","무조건 맞을겁니다.","아닐겁니다"]
+            a = random.choice(response)
+            await message.channel.send(a)
 
 
 
+
+        if message.content.startswith("봇 확률"):
+            a = message.content[5:]
+            per = random.randint(0,100)
+            await message.channel.send("`%s` 은 `%s%%`입니다." %(a, per))
 
 
 
