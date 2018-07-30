@@ -24,6 +24,7 @@ from send import Command
 #     python = sys.executable
 #     os.execl(python, python, * sys.argv)
 
+''' Function '''
 def htmltotext(html):
     soup = BeautifulSoup(html)
     text_parts = soup.findAll(text=True)
@@ -111,6 +112,9 @@ async def smt(source, target, string):
                         return None
     except:
         return None                
+
+
+''' Main '''
 
 class chatting(Command):
     
@@ -336,7 +340,7 @@ class chatting(Command):
                 embed=discord.Embed(title="❌ 오류 발생", description="봇의 권한이 부족하거나 사용자의 권한이 봇보다 높습니다.",color=0xff0909)
                 await message.channel.send(embed=embed)
 
-        if message.content.startswith('봇 별명 초기화'):
+        if message.content.startswith('봇 별명 초기화') or message.content.startswith("봇 별명초기화"):
             try:
                 memberid = message.author.id
                 member = message.guild.get_member(memberid)
@@ -435,7 +439,7 @@ class chatting(Command):
 
                 
             except Exception as error:
-                embed=discord.Embed(title="⚠ 오류 발생", description="봇 리마인더 <시간(초)> <사유(선택)> 형식으로 사용해주세요. \n```%s```     "%(error) ,color=0xff0909)    
+                embed=discord.Embed(title="❌ 오류 발생", description="봇 리마인더 <시간(초)> <사유(선택)> 형식으로 사용해주세요. \n```%s```     "%(error) ,color=0xff0909)    
                 await message.channel.send(embed=embed)
 
 
@@ -765,7 +769,6 @@ class chatting(Command):
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get("https://openapi.naver.com/v1/search/encyc.json?query=" + a) as r:
                     c = await r.text()
-                    print(c)
                     c = json.loads(c)
                     a = c['items'][0]     
                     
