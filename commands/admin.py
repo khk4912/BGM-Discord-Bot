@@ -19,11 +19,6 @@ class admin(Command):
     
     def __init__(self, *args, **kwargs):
         Command.__init__(self, *args, **kwargs)
-        self.loop = asyncio.get_event_loop()
-        self.loop.create_task(self.set_db())
-
-    async def set_db(self):
-        self.conn = await aiomysql.connect(host='127.0.0.1', user=PW.db_user, password=PW.db_pw, db='bot', autocommit=True, loop=self.loop)
           
 
 
@@ -112,10 +107,6 @@ class admin(Command):
                 try:
                     if not message.mentions == []:
                         member = message.mentions[0]
-                        member = message.guild.get_member(int(memberid))
-                        await message.guild.ban(member,reason=str(message.author) + "님의 명령어 사용으로 인해 밴 당하셨습니다.", delete_message_days=7)
-                        embed=discord.Embed(title="✅ 유저 밴", description="유저의 밴을 완료했습니다.",color=0x1dc73a )
-                        await message.channel.send(embed=embed)
                         await message.guild.ban(member,reason=str(message.author) + "님의 명령어 사용으로 인해 밴 당하셨습니다.", delete_message_days=7)
                         embed=discord.Embed(title="✅ 유저 밴", description="유저의 밴을 완료했습니다.",color=0x1dc73a )
                         await message.channel.send(embed=embed)

@@ -1,6 +1,7 @@
 import discord
 import TOKEN
 import PW
+import asyncio
 import aiomysql
 
 class CommandInto(type):
@@ -15,10 +16,19 @@ class CommandInto(type):
 class Command(object, metaclass=CommandInto):
 
     def __init__(self, bot):
-        self.client = bot 
+        self.client = bot
+
+        self.loop = asyncio.get_event_loop()
+        self.loop.create_task(self.set_db())
+
+    async def set_db(self):
+        self.conn_pool = await aiomysql.create_pool(host='127.0.0.1', user=PW.db_user, password=PW.db_pw, db='bot', autocommit=True, loop=self.loop,
+        minsize=5, maxsize=10)
+
+
         
-    async def _send(self,message):
+    async def _send(self, message):
         await self.on_message(message)
 
-    async def on_message(self,message):
+    async def on_message(self, message):
         pass
