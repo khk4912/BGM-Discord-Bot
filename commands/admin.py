@@ -24,6 +24,7 @@ class admin(Command):
 
     async def on_message(self, message):
 
+
         if message.content.startswith('봇 뮤트'):
             if message.author.guild_permissions.administrator == True:
                 try:

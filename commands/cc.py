@@ -23,7 +23,7 @@ class cc(Command):
 
         ''' 일반 유저 가능 ''' 
 
-        if message.channel is None:
+        if message.channel is None or message.guild is None:
             return 
 
         if message.content.startswith("봇 "):

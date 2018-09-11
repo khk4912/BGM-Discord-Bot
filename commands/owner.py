@@ -5,7 +5,7 @@ import sys
 import os
 import PW 
 import aiomysql 
-
+import pickle
 from send import Command
 
 '''
@@ -18,17 +18,100 @@ def restart_bot():
     python = sys.executable
     os.execl(python, python, * sys.argv)
 
+
 ''' Main ''' 
 class owner(Command):
 
     def __init__(self, *args, **kwargs):
         Command.__init__(self, *args, **kwargs)
 
+        self.noticelist = ["봇-공지","봇_공지", "봇공지", "공지", "bot-notice", "bot_notice", "botnotice",  "notice", "bot-announcement", "botannouncment", 'bot_announcement']
+
+    def search_notice_channel(self):
+
+        allserver = []
+        self.noticechannels = []
+        for i in self.client.guilds:
+            allserver.append(i)
+        for b in allserver:
+            for i in b.channels:
+                if "bot-announcement" in i.name or "bot_announcement" in i.name or "봇-공지" in i.name or "봇_공지" in i.name:
+                    self.noticechannels.append(i)
+      
+        for c in self.noticechannels:
+            try:
+                allserver.remove(c.guild)
+            except:
+                pass
+
+        for b in allserver:
+            for i in b.channels:
+                if "bot-notice" in i.name or "bot_notice" in i.name:
+                    self.noticechannels.append(i)
+        for c in self.noticechannels:
+            try:
+                allserver.remove(c.guild)
+            except:
+                pass
+
+        for b in allserver:
+            for i in b.channels:
+                if "notice" in i.name or "공지" in i.name:
+                    self.noticechannels.append(i)
+        for c in self.noticechannels:
+            try:
+                allserver.remove(c.guild)
+            except:
+                pass
+
+        self.noserver = []
+        for b in allserver:
+            for i in b.channels:
+                if "announcement" in i.name or "annoucement" in i.name:
+                    self.noticechannels.append(i)
+
+        for c in self.noticechannels:
+            try:
+                allserver.remove(c.guild)
+            except:
+                pass
+        for a in allserver:
+            self.noserver.append(a.name)
+
+                    
+
+
 
     async def on_message(self,message):
 
-        if not message.author.id == 289729741387202560:
-            return
+
+        if message.content.startswith("봇 경고보기"):
+            if not message.mentions == []:
+                user = message.mentions[0]
+                async with self.conn_pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("""SELECT * FROM warn WHERE id = %s""", (str(user.id) ))
+                        row = await cur.fetchone()
+                        
+                        if row is None:
+                            warns = 0
+                            embed=discord.Embed(title="✅ 경고 조회", description="%s 님의 경고를 불러옵니다." %(user.mention) ,color=0x1dc73a )
+                            embed.add_field(name="경고 수", value=str(warns) + "회" )
+                            embed.set_footer(text="5회 이상 경고 발생시 제제 처리됩니다.")
+
+                        else:
+                            warns = row[1]
+                            embed=discord.Embed(title="✅ 경고 조회", description="%s 님의 경고를 불러옵니다." %(user.mention) ,color=0x1dc73a )
+                            embed.add_field(name="경고 수", value=str(warns) + "회" )
+                            embed.set_footer(text="5회 이상 경고 발생시 제제 처리됩니다.")
+
+                await message.channel.send(embed=embed)
+
+            else:
+                embed=discord.Embed(title="⚠ 주의", description="사용자가 선택되지 않았습니다. 멘션으로 사용자를 설정해주세요.",color=0xd8ef56)
+                await message.channel.send(embed=embed)
+
+
 
         if message.content == "봇 재시작":
             restart_bot()
@@ -49,17 +132,54 @@ class owner(Command):
 
 
 
-        # if message.content.startswith("봇 경고추가"):
-        #     if not message.mentions == []:
-        #         user = message.mentions[0]
-        #         async with self.conn.cursor() as cur:
-        #             await cur.execute("""SELECT id FROM warn WHERE id = %s""", (str(message.author.id)) )
+        if message.content.startswith("봇 경고추가"):
+            if not message.mentions == []:
+                user = message.mentions[0]
+                async with self.conn_pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("""SELECT * FROM warn WHERE id = %s""", (str(user.id) ))
+                        row = await cur.fetchone()
+                        
+                        if row is None:
+                            warns = 1
+                            await cur.execute("""INSERT INTO warn (id, times) VALUES (%s, %s)""", (str(user.id), 1 ))
+                        else:
+                            warns = row[1] + 1
+                            await cur.execute("""UPDATE warn SET times=%s WHERE id = %s""", (warns, str(user.id)))
 
+                embed=discord.Embed(title="✅ 경고 추가", description="%s 님의 경고를 성공했습니다." %(user.mention) ,color=0x1dc73a )
+                embed.add_field(name="경고 수", value=str(warns) + "회" )
+                embed.set_footer(text="5회 이상 경고 발생시 제제 처리됩니다.")
+                await message.channel.send(embed=embed)
 
-
-
-        #     else:
-        #         embed=discord.Embed(title="⚠ 주의", description="선택되지 않은 사용자.",color=0xd8ef56)
-        #         await message.channel.send(embed=embed)
+            else:
+                embed=discord.Embed(title="⚠ 주의", description="선택되지 않은 사용자.",color=0xd8ef56)
+                await message.channel.send(embed=embed)
                 
+
+
+        if message.content.startswith("봇 공지"):
+            contents = message.content[4:].lstrip()
+            if contents == "" or contents is None:
+                await message.channel.send("내용을 입력하세요. 전송에 실패하였습니다.")
+            else:
+                await message.channel.send("정말 전송합니까? (y/n)")
+                def usercheck(a):
+                    return a.author == message.author
+
+                answer = await self.client.wait_for('message', check=usercheck, timeout=30)
+                answer = answer.content
+
+                if answer == "y":
+                    self.search_notice_channel()
+                    for i in self.noticechannels:
+                        try:
+                            await i.send(contents)
+                        except:
+                            pass
+                    
+                    await message.channel.send("전송 완료! 전송 하지 못한 서버들 : %s" %(self.noserver))
+                else:
+                    await message.channel.send("전송을 취소합니다.")
+
 

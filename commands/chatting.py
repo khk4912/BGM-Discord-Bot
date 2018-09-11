@@ -124,6 +124,8 @@ class chatting(Command):
         
     async def on_message(self, message):
 
+
+
         if message.content.startswith("봇 온도"):
             try:
                 a = os.popen("vcgencmd measure_temp").read()
@@ -225,9 +227,9 @@ class chatting(Command):
             a = message.content
             a = a[5:]
             if a == "":
-                embed=discord.Embed(title=" ", description="봇의 사용을 도와줄 도움말입니다. 다음 명령어 그룹들을 참고하세요.", color=0x237ccd)
-                embed.add_field(name="봇 도움 기타", value="기타 도움말입니다. 자세한 명령어는 '봇 도움 기타'을 참고하세요.", inline=False)
-                embed.add_field(name="봇 도움 게임", value="봇에 있는 게임 기능에 관련된 도움말입니다. 자세한 명령어는 '봇 도움 게임'을 참고하세요.", inline=True)
+                embed=discord.Embed(title="📜 도움말", description="봇의 사용을 도와줄 도움말입니다. 다음 명령어 그룹들을 참고하세요.", color=0x237ccd)
+                # embed.add_field(name="봇 도움 기타", value="기타 도움말입니다. 자세한 명령어는 '봇 도움 기타'을 참고하세요.", inline=False)
+                # embed.add_field(name="봇 도움 게임", value="봇에 있는 게임 기능에 관련된 도움말입니다. 자세한 명령어는 '봇 도움 게임'을 참고하세요.", inline=True)
                 embed.add_field(name="봇 도움 기능", value="봇에 있는 기능에 대해 알려드립니다.", inline=True)
                 embed.add_field(name="봇 도움 어드민", value="어드민이 서버 관리를 위해 사용 가능한 기능입니다. 자세한 명령어는 '봇 도움 어드민'을 참고하세요.", inline=True)
 
@@ -239,42 +241,50 @@ class chatting(Command):
                 except:
                     embed=discord.Embed(title="⚠ 주의", description="DM 보내기에 실패하였습니다. 계정에서 DM 설정을 확인해주세요.",color=0xd8ef56)
                     await message.channel.send(embed=embed)
-            elif a == "게임":
-                embed=discord.Embed(title=" ", description="봇에 있는 채팅 기능을 설명합니다.", color=0x237ccd)
-                embed.add_field(name="봇 끝말잇기", value="봇과 끝말잇기를 할 수 있습니다. 제한시간은 10초입니다.", inline=False)
-                embed.add_field(name="봇 숫자게임", value="1~10까지 중 랜덤으로 뽑은 숫자에서, 봇보다 숫자가 크면 승리입니다.", inline=True)
-                embed.add_field(name="봇 카드게임", value="A ~ K 까지의 카드에서 높은 숫자가 나오면 승리합니다.", inline=True)
-                embed.add_field(name="봇 컵게임", value="3개의 컵중에 동전이 들어간 컵을 찾는 게임입니다.", inline=True)
-                embed.add_field(name="봇 도박 컵 <배팅금액> <배수>", value="컵게임과 같은 방식입니다. 단, 배수가 늘어날수록 컵의 개수도 그만큼 늘어납니다.", inline=True)
+            # elif a == "게임":
+            #     embed=discord.Embed(title=" ", description="봇에 있는 채팅 기능을 설명합니다.", color=0x237ccd)
+            #     embed.add_field(name="봇 끝말잇기", value="봇과 끝말잇기를 할 수 있습니다. 제한시간은 10초입니다.", inline=False)
+            #     embed.add_field(name="봇 숫자게임", value="1~10까지 중 랜덤으로 뽑은 숫자에서, 봇보다 숫자가 크면 승리입니다.", inline=True)
+            #     embed.add_field(name="봇 카드게임", value="A ~ K 까지의 카드에서 높은 숫자가 나오면 승리합니다.", inline=True)
+            #     embed.add_field(name="봇 컵게임", value="3개의 컵중에 동전이 들어간 컵을 찾는 게임입니다.", inline=True)
+            #     embed.add_field(name="봇 도박 컵 <배팅금액> <배수>", value="컵게임과 같은 방식입니다. 단, 배수가 늘어날수록 컵의 개수도 그만큼 늘어납니다.", inline=True)
 
-                embed.set_footer(text="도움 명령어에 없는 명령어가 있을 수 있습니다.")
-                try:
-                    await message.author.send(embed=embed)
-                except:
-                    embed=discord.Embed(title="⚠ 주의", description="DM 보내기에 실패하였습니다. 계정에서 DM 설정을 확인해주세요.",color=0xd8ef56)
-                    await message.channel.send(embed=embed)
+            #     embed.set_footer(text="도움 명령어에 없는 명령어가 있을 수 있습니다.")
+            #     try:
+            #         await message.author.send(embed=embed)
+            #     except:
+            #         embed=discord.Embed(title="⚠ 주의", description="DM 보내기에 실패하였습니다. 계정에서 DM 설정을 확인해주세요.",color=0xd8ef56)
+            #         await message.channel.send(embed=embed)
 
             elif a == "기능":
                 embed=discord.Embed(title=" ", description="봇에 있는 편리한 기능을 설명합니다.", color=0x237ccd)
                 embed.add_field(name="봇 프사 @상대", value="멘션한 상대의 프로필 사진을 가져옵니다. 상대를 지정하지 않으면 자신의 프로필 사진을 가져옵니다.", inline=False)
                 embed.add_field(name="봇 백과사전 <검색어>", value="백과사전에서 검색어를 검색해줍니다.", inline=False)
-                embed.add_field(name="봇 도서검색 <검색어>", value="도서를 검색해줍니다.", inline=False)
-                embed.add_field(name="봇 afk <사유>", value="잠수를 선언합니다. 다시 돌아오면 환영해드립니다.", inline=False)
+                embed.add_field(name="봇 나무위키 <검색어>", value="해당 나무위키 검색어로 바로가는 나무위키 링크를 표시하고, 문서를 일부분 미리 볼 수 있습니다.")
+                # embed.add_field(name="봇 도서검색 <검색어>", value="도서를 검색해줍니다.", inline=False)
+                embed.add_field(name="봇 afk/잠수 <사유>", value="잠수를 선언합니다. 다시 돌아오면 환영해드립니다.", inline=False)
+                embed.add_field(name="봇 자동번역 <번역할 문장>", value="언어를 자동으로 인식한 후 한국어로 번역합니다.")
                 embed.add_field(name="봇 한글영어번역(영어한글번역, 일어한글번역, 한글일어번역) <번역할 문장>", value="선택한 언어에서 선택한 언어로 번역해줍니다.", inline=False)
-                embed.add_field(name="봇 죽창 <개수>", value="죽창을 표시합니다. 60개가 최대입니다.",inline=False)
+
+                # embed.add_field(name="봇 죽창 <개수>", value="죽창을 표시합니다. 60개가 최대입니다.",inline=False)
                 embed.add_field(name="봇 지진", value="지진 정보를 표시합니다.", inline=False)
                 embed.add_field(name="봇 별명변경 <바꿀별명>", value="입력한 별명으로 별명을 변경합니다.", inline=False)
                 embed.add_field(name="봇 조의 표해", value="봇이 조의를 표해줍니다.", inline=False)
-                embed.add_field(name="봇 냥이", value="랜덤으로 고양이짤을 보여준다냐!", inline=False)
-                embed.add_field(name="봇 강아지", value="랜덤으로 강아지짤을 보야준다멍.", inline=False)
-                embed.add_field(name="봇 원주율 구해", value="원주율을 1997자리 까지 구합니다.", inline=False)
+                embed.add_field(name="봇 고양이/냥이", value="랜덤으로 고양이짤을 보여준다냐!", inline=False)
+                embed.add_field(name="봇 강아지", value="랜덤으로 강아지짤을 보여준다멍.", inline=False)
+                # embed.add_field(name="봇 원주율 구해", value="원주율을 1997자리 까지 구합니다.", inline=False)
                 embed.add_field(name="봇 리마인더 <시간(초)> <사유(선택)>", value="선택한 초 있다가 알려드려요.", inline=False)
-            
+
                 embed.add_field(name="봇 기상특보", value="기상특보 정보를 표시합니다.", inline=False)
                 embed.add_field(name="봇 미세먼지", value="미세먼지 정보를 표시합니다.", inline=False)
                 # embed.add_field(name="봇 11번가 검색 <검색어>", value="11번가에서 검색해, 정보를 불러옵니다.", inline=False)
-                embed.add_field(name="봇 명언은?", value="명언을 표시합니다. (명언인지 확인안됨)", inline=False)
-                embed.add_field(name="봇 서버 인원은?", value="채팅한 서버의 인원을 표시합니다.", inline=False)
+                embed.add_field(name="봇 초미세먼지", value="초미세먼지 정보를 표시합니다.", inline=False)
+                embed.add_field(name="봇 멜론차트", value="멜론 TOP10을 보여줍니다.", inline=False)
+                embed.add_field(name="봇 가사검색", value="선택한 노래의 가사를 검색해줍니다. 가끔 다른 노래 가사가 들어갈수도 있으니 자세히 보기로 확인해보시는것도 좋아요!", inline=False)
+                embed.add_field(name="더 많은 기능은?", value="궁금증이나 도움 명령어에 수록되지 않은 명령어는 BGM#0970으로 친추후 DM해주세요!", inline=False)
+
+                # embed.add_field(name="봇 명언은?", value="명언을 표시합니다. (명언인지 확인안됨)", inline=False)
+                # embed.add_field(name="봇 서버 인원은?", value="채팅한 서버의 인원을 표시합니다.", inline=False)
 
                 embed.set_footer(text="도움 명령어에 없는 명령어가 있을 수 있습니다.")
                 try:
@@ -291,9 +301,13 @@ class chatting(Command):
                 embed.add_field(name="봇 전체뮤트", value="명령어를 사용한 채널을 관리자 제외 모든 유저가 사용할 수 없도록 합니다.", inline=False)
                 embed.add_field(name="봇 언뮤트 @유저", value="유저를 해당 채널에서 언뮤트시킵니다.", inline=False)
                 embed.add_field(name="봇 전체언뮤트", value="전체뮤트를 해제합니다.", inline=False)
-                embed.add_field(name="봇 커스텀 추가 <명령어>|<봇의 대답>", value="해당 서버만 사용되는 커스텀 명령어를 추가합니다. 명령어와 봇의 대답 구분에는 꼭 |가 필요합니다.", inline=False)
+                embed.add_field(name="봇 커스텀 추가 <명령어>/<봇의 대답>", value="해당 서버만 사용되는 커스텀 명령어를 추가합니다. 명령어와 봇의 대답 구분에는 꼭 /가 필요합니다.", inline=False)
+                embed.add_field(name="봇 커스텀 수정 <수정할 명령어>/<봇의 대답>", value="이미 추가된 커스텀 명령어를 수정합니다. 명령어와 봇의 대답 구분에는 꼭 /가 필요합니다.", inline=False)
                 embed.add_field(name="봇 커스텀 보기", value="해당 서버의 모든 커스텀 명령어를 출력합니다.", inline=False)
                 embed.add_field(name="봇 커스텀 삭제 [삭제할 커스텀 명령어]", value="해당 서버의 커스텀 명령어중 입력한 명령어를 삭제합니다.", inline=False)
+
+                embed.add_field(name="봇 커스텀 초기화", value="해당 서버의 모든 커스텀 명령어를 삭제합니다.", inline=False)
+                embed.add_field(name="더 많은 기능은?", value="궁금증이나 도움 명령어에 수록되지 않은 명령어는 BGM#0970으로 친추후 DM해주세요!", inline=False)
 
                 embed.set_footer(text="도움 명령어에 없는 명령어가 있을 수 있습니다.")
 
@@ -302,14 +316,14 @@ class chatting(Command):
                 except:
                     embed=discord.Embed(title="⚠ 주의", description="DM 보내기에 실패하였습니다. 계정에서 DM 설정을 확인해주세요.",color=0xd8ef56)
                     await message.channel.send(embed=embed)
-            elif a == "기타":
-                embed=discord.Embed(title=" ", description="봇에 있는 다른 잡다한 기능들을 소개합니다.", color=0x237ccd)
-                embed.add_field(name="봇 철컹철컹", value="??? : 철컹", inline=False)
-                try:
-                    await message.author.send(embed=embed)
-                except:
-                    embed=discord.Embed(title="⚠ 주의", description="DM 보내기에 실패하였습니다. 계정에서 DM 설정을 확인해주세요.",color=0xd8ef56)
-                    await message.channel.send(embed=embed)
+            # elif a == "기타":
+            #     embed=discord.Embed(title=" ", description="봇에 있는 다른 잡다한 기능들을 소개합니다.", color=0x237ccd)
+            #     embed.add_field(name="봇 철컹철컹", value="??? : 철컹", inline=False)
+            #     try:
+            #         await message.author.send(embed=embed)
+            #     except:
+            #         embed=discord.Embed(title="⚠ 주의", description="DM 보내기에 실패하였습니다. 계정에서 DM 설정을 확인해주세요.",color=0xd8ef56)
+            #         await message.channel.send(embed=embed)
             
             else:
                 embed=discord.Embed(title="⚠ 주의", description="해당 도움 그룹이 없습니다. 존재하는 도움 그룹은 \n```기타, 게임, 기능, 어드민``` 입니다.",color=0xd8ef56)
@@ -666,7 +680,41 @@ class chatting(Command):
 
                 embed.set_image(url=a)
                 await message.channel.send(embed=embed)
-        
+
+        if message.content.startswith("봇 가사검색"):   
+            try:
+                a = message.content[6:].lstrip()
+                if a == "":
+                    embed=discord.Embed(title="⚠ 주의", description="검색어가 없습니다.",color=0xd8ef56)
+                    await message.channel.send(embed=embed)
+                else:     
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get("http://music.naver.com/search/search.nhn?query=" + a + "&target=track") as r:
+
+                            c = await r.text()
+                            soup = BeautifulSoup(c,"html.parser")
+                            f = soup.find_all("a",{"title":"가사"})[0]['class'][1]
+                            print(f)
+                            f = f.split(",")
+                            # print(f)
+                            f = f[2]
+                            f = f[2:]
+                            load = "http://music.naver.com/lyric/index.nhn?trackId=" + f
+                            async with aiohttp.ClientSession() as session:
+                                async with session.get(load) as r:
+                                    c = await r.text()
+                                    soup = BeautifulSoup(c,"html.parser")
+                                    f = soup.find("div",{"id":"lyricText"}).text
+                                    f = f[:100]
+                                    embed=discord.Embed(title="🎵 " + a + "에 대한 가사 검색", description="\n" + f +"...", color=0x237ccd)
+                                    embed.add_field(name="자세히 보기", value=load, inline=False)
+
+                                    await message.channel.send(embed=embed)
+            except Exception as error:
+                embed=discord.Embed(title="❌ 오류", description="오류가 발생하였습니다.\n%s",color=0xff0909)
+                await message.channel.send(embed=embed)
+
+
         
         if message.content.startswith("봇 한강"):
             async with aiohttp.ClientSession() as session:
@@ -764,26 +812,36 @@ class chatting(Command):
                 await message.channel.send(embed=embed)
 
         if message.content.startswith("봇 백과사전"):
-            a = message.content[6:].lstrip()
-            headers = {"X-Naver-Client-Id" : TOKEN.search_id, "X-Naver-Client-Secret" : TOKEN.search_secret}
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get("https://openapi.naver.com/v1/search/encyc.json?query=" + a) as r:
-                    c = await r.text()
-                    c = json.loads(c)
-                    a = c['items'][0]     
-                    
-                    title = a['title']
-                    title = htmltotext(title)
-                    link = a['link']
-                    thumbnail = a['thumbnail']
-                    description = a['description']
-                    description = htmltotext(description)
-                    embed=discord.Embed(title="🔖 백과사전", description="**" + title+ "**에 대한 검색결과.", color=0x237ccd)
-                    embed.add_field(name="내용", value=description, inline=False)
-                    embed.add_field(name="자세히 읽기", value=link, inline=False)
-                    embed.set_image(url=thumbnail)
-
+            try:
+                a = message.content[6:].lstrip()
+                if a == "":
+                    embed=discord.Embed(title="⚠ 주의", description="검색어가 없습니다.",color=0xd8ef56)
                     await message.channel.send(embed=embed)
+                else:
+
+                    headers = {"X-Naver-Client-Id" : TOKEN.search_id, "X-Naver-Client-Secret" : TOKEN.search_secret}
+                    async with aiohttp.ClientSession(headers=headers) as session:
+                        async with session.get("https://openapi.naver.com/v1/search/encyc.json?query=" + a) as r:
+                            c = await r.text()
+                            c = json.loads(c)
+                            a = c['items'][0]     
+                            
+                            title = a['title']
+                            title = htmltotext(title)
+                            link = a['link']
+                            thumbnail = a['thumbnail']
+                            description = a['description']
+                            description = htmltotext(description)
+                            embed=discord.Embed(title="🔖 백과사전", description="**" + title+ "**에 대한 검색결과.", color=0x237ccd)
+                            embed.add_field(name="내용", value=description, inline=False)
+                            embed.add_field(name="자세히 읽기", value=link, inline=False)
+                            embed.set_image(url=thumbnail)
+
+                            await message.channel.send(embed=embed)
+
+            except:
+                embed=discord.Embed(title="❌ 오류 발생", description="해당 검색어에 대한 내용을 찾을 수 없습니다.",color=0xff0909)
+                await message.channel.send(embed=embed)
 
 
 
