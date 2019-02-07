@@ -1,3 +1,27 @@
+'''
+MIT License
+
+Copyright (c) 2019 khk4912
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+
 import discord
 import datetime
 import os
@@ -487,41 +511,36 @@ class chatting(Command):
             await message.add_reaction("🇴")
             await message.add_reaction("🇾")
 
-        if message.content == ("봇 지진"):
-            async with aiohttp.ClientSession() as session:
-                async with session.get("http://m.kma.go.kr/m/risk/risk_03.jsp#") as r:
+        # if message.content == ("봇 지진"):
+        #     async with aiohttp.ClientSession() as session:
+        #         async with session.get("https://m.kma.go.kr/m/eqk/eqk.jsp?type=korea") as r:
 
-                    c = await r.text()
-                    soup = BeautifulSoup(c,"html.parser")
-                    all = soup.find_all("div",{"id":"div_0"})
-                    a = right_check(all[0].find_all("td",{"class":"tal pad2"})[0].text)
-                    b = right_check(all[0].find_all("td",{"class":"tal pad2"})[1].text)
-                    c = right_check(all[0].find_all("td",{"class":"tal pad2"})[2].text)
-                    d = right_check(all[0].find_all("td",{"class":"tal pad2"})[3].text)
-                    e = right_check(all[0].find_all("td",{"class":"tal pad2"})[4].text)
-                    f = right_check(all[0].find_all("td",{"class":"tal pad2"})[5].text)
-                
-                    embed=discord.Embed(title="지진 정보", description=a,color=0x62bf42)
-                    try:
-                        img = all[0].find_all("img")[0]['src']
-                        img = "http://m.kma.go.kr" + img
-                        if img is None: pass
-                        else: embed.set_image(url=img)
+        #             c = await r.text()
+        #             soup = BeautifulSoup(c,"html.parser")
+        #             table = soup.find("table",{"class":"table02"})
+        #             tr = table.find_all("tr")
+
+        #             embed=discord.Embed(title="지진 정보", description=a,color=0x62bf42)
+        #             try:
+        #                 img = all[0].find_all("img")[0]['src']
+        #                 img = "http://m.kma.go.kr" + img
+        #                 if img is None: pass
+        #                 else: embed.set_image(url=img)
 
 
 
-                    except:
-                        pass
+        #             except:
+        #                 pass
 
-                    embed.add_field(name="규모", value=b, inline=True)
-                    embed.add_field(name="발생위치", value=c, inline=True)
-                    embed.add_field(name="발생깊이", value=d, inline=True)
-                    embed.add_field(name="진도", value=e, inline=True)
-                    embed.add_field(name="참고사항", value=f, inline=True)
-                    embed.set_footer(text="기상청")
+        #             embed.add_field(name="규모", value=b, inline=True)
+        #             embed.add_field(name="발생위치", value=c, inline=True)
+        #             embed.add_field(name="발생깊이", value=d, inline=True)
+        #             embed.add_field(name="진도", value=e, inline=True)
+        #             embed.add_field(name="참고사항", value=f, inline=True)
+        #             embed.set_footer(text="기상청")
 
 
-                    await message.channel.send(embed=embed)
+        #             await message.channel.send(embed=embed)
 
         if message.content.startswith("봇 골라"):
             if "@everyone" in message.content or "@here" in message.content:
@@ -538,7 +557,7 @@ class chatting(Command):
 
         if message.content.startswith("봇 기상특보"):
             async with aiohttp.ClientSession() as session:
-                async with session.get('http://newsky2.kma.go.kr/service/WetherSpcnwsInfoService/WeatherWarningItem?serviceKey=wRI0WBBRTbujkmovOf%2FhZ%2F2gYfki7qlPzuGkLogwp04bnPPE1CU9kGTf3VjnA%2FdGT8Q66Dv8f9eP7zpatOLsyQ%3D%3D') as r:
+                async with session.get('http://newsky2.kma.go.kr/service/WetherSpcnwsInfoService/WeatherWarningItem?serviceKey=' + TOKEN.weather_warn) as r:
                     c = await r.text()
                     soup = BeautifulSoup(c,"lxml-xml")
                     title = lxml_string(soup, "t1")
@@ -582,7 +601,7 @@ class chatting(Command):
 
         if message.content.startswith("봇 미세먼지"):
             async with aiohttp.ClientSession() as session:
-                async with session.get('http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getCtprvnMesureLIst?serviceKey=wRI0WBBRTbujkmovOf%2FhZ%2F2gYfki7qlPzuGkLogwp04bnPPE1CU9kGTf3VjnA%2FdGT8Q66Dv8f9eP7zpatOLsyQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&itemCode=PM10&dataGubun=HOUR') as r:
+                async with session.get('http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getCtprvnMesureLIst?serviceKey=' + TOKEN.misae +  '&numOfRows=1&pageSize=1&pageNo=1&startPage=1&itemCode=PM10&dataGubun=HOUR') as r:
                     c = await r.text()
                     
                     soup = BeautifulSoup(c,"lxml-xml")
@@ -623,7 +642,7 @@ class chatting(Command):
 
         if message.content.startswith("봇 초미세먼지"):
             async with aiohttp.ClientSession() as session:
-                async with session.get('http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getCtprvnMesureLIst?serviceKey=wRI0WBBRTbujkmovOf%2FhZ%2F2gYfki7qlPzuGkLogwp04bnPPE1CU9kGTf3VjnA%2FdGT8Q66Dv8f9eP7zpatOLsyQ%3D%3D&numOfRows=1&pageSize=1&pageNo=1&startPage=1&itemCode=PM25&dataGubun=HOUR') as r:
+                async with session.get('http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getCtprvnMesureLIst?serviceKey=' + TOKEN.misae + '&numOfRows=1&pageSize=1&pageNo=1&startPage=1&itemCode=PM25&dataGubun=HOUR') as r:
                     c = await r.text()
                     
                     soup = BeautifulSoup(c,"lxml-xml")
@@ -998,7 +1017,6 @@ class chatting(Command):
 
         if message.content.startswith("봇 이 서버는?") or message.content.startswith("봇 서버정보"):
             number = 0
-            nonadminserver = []
             date = "%s (UTC)"% message.guild.created_at
             for i in message.guild.members:
                 number = number + 1
@@ -1148,7 +1166,7 @@ class chatting(Command):
 
             else:
                 async with aiohttp.ClientSession() as session:
-                    async with session.get("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&APPID=abad6457b8bd02c6ff6d0f55525a683b&units=metric") as r:
+                    async with session.get("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&APPID=" + TOKEN.weather + "&units=metric") as r:
                             if r.status == 200:
                                 c = await r.json()
                                 embed=discord.Embed(title="⛅ %s 날씨" %(c["name"]), description="%s (구름 %s%%)" %(c["weather"][0]["main"], c["clouds"]["all"]) ,color=0x1dc73a )
