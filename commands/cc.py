@@ -26,6 +26,9 @@ class cc(Command):
         if message.channel is None or message.guild is None:
             return 
 
+        
+
+
         if message.content.startswith("봇 "):
             command = message.content[2:]
             async with self.conn_pool.acquire() as conn:
@@ -36,7 +39,8 @@ class cc(Command):
                     if not row is None:
                         await message.channel.send(row[2])
 
-        if message.content.startswith('봇 커스텀 보기') or message.content.startswith("봇 커스텀보기"):
+        if (message.content.startswith('봇 커스텀 보기') or message.content.startswith("봇 커스텀보기") or message.content.startswith("봇 커스텀 목록") 
+        or message.content.startswith("봇 커스텀목록")):
             try:
                 async with self.conn_pool.acquire() as conn:
                     async with conn.cursor() as cur:

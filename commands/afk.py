@@ -31,7 +31,6 @@ class afk(Command):
             await message.channel.send(embed=embed)
 
 
-
         if message.content.startswith("봇 잠수") or message.content.startswith("봇 afk"):
             msg = message.content
             msg = msg.replace("봇 잠수", "")

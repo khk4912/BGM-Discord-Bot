@@ -281,6 +281,8 @@ class chatting(Command):
                 embed.add_field(name="봇 초미세먼지", value="초미세먼지 정보를 표시합니다.", inline=False)
                 embed.add_field(name="봇 멜론차트", value="멜론 TOP10을 보여줍니다.", inline=False)
                 embed.add_field(name="봇 가사검색", value="선택한 노래의 가사를 검색해줍니다. 가끔 다른 노래 가사가 들어갈수도 있으니 자세히 보기로 확인해보시는것도 좋아요!", inline=False)
+                embed.add_field(name="봇 날씨 [도시]", value="선택한 도시의 현재 날씨를 보여줍니다.", inline=False)
+
                 embed.add_field(name="더 많은 기능은?", value="궁금증이나 도움 명령어에 수록되지 않은 명령어는 BGM#0970으로 친추후 DM해주세요!", inline=False)
 
                 # embed.add_field(name="봇 명언은?", value="명언을 표시합니다. (명언인지 확인안됨)", inline=False)
@@ -326,7 +328,7 @@ class chatting(Command):
             #         await message.channel.send(embed=embed)
             
             else:
-                embed=discord.Embed(title="⚠ 주의", description="해당 도움 그룹이 없습니다. 존재하는 도움 그룹은 \n```기타, 게임, 기능, 어드민``` 입니다.",color=0xd8ef56)
+                embed=discord.Embed(title="⚠ 주의", description="해당 도움 그룹이 없습니다. 존재하는 도움 그룹은 \n``` 기능, 어드민``` 입니다.",color=0xd8ef56)
                 await message.channel.send(embed=embed)
 
         if message.content.startswith('봇 안녕') or message.content.startswith('봇 안냥') or message.content.startswith("봇 ㅎㅇ") or message.content.startswith("봇 gd") or message.content.startswith("봇 hello"):
@@ -396,7 +398,13 @@ class chatting(Command):
                 embed=discord.Embed(title="❌ 오류 발생", description="형식을 제대로 입력하셨는지 학인하시거나, 값 한도를 초과했는지 확인해주세요.. \n\n0001-01-01 ~ 9999-12-31 %s" %(error),color=0xff0909 )
                 await message.channel.send(embed=embed)
 
-
+        # if message.content.startswith("봇 해티는?"):
+        #     embed=discord.Embed(title="이름", description="해티 (본명 : 김도훈)", color=0x4286f4)
+        #     embed.set_author(name="기여운 해티의 정보입니다.")
+        #     embed.add_field(name="성별", value="남", inline=False)
+        #     embed.add_field(name="좋아하는 것", value="Python, <@289729741387202560> (BGM#0970), 디스코드", inline=True)
+        #     embed.add_field(name="싫어하는 것", value="햇반, 갈아만든 배, Jollyed, 크콩", inline=True)
+        #     await message.channel.send(embed=embed)
 
         if message.content.startswith("봇 핑"):
             nowasdf = datetime.datetime.now()
@@ -660,7 +668,7 @@ class chatting(Command):
             memberid = memberid.replace(">", "")
             if memberid == "":
                 memberid = message.author.id
-                member = message.guild.get_member(memberid)
+                member = self.client.get_user(memberid)
                 a = member.avatar_url
                 if a == "":
                     a = member.default_avatar_url
@@ -672,7 +680,7 @@ class chatting(Command):
             else:
                 memberid = int(memberid)
 
-                member = message.guild.get_member(memberid)
+                member = self.client.get_user(memberid)
                 a = member.avatar_url
                 if a == "":
                     a = member.default_avatar_url
@@ -1027,6 +1035,30 @@ class chatting(Command):
                 embed.set_thumbnail(url=message.guild.icon_url)
                 await message.channel.send(embed=embed)
 
+        if message.content.startswith("봇 컵게임"):
+            fstcup = random.randint(1,3)
+            await message.channel.send("봇이 컵 3개를 섞습니다. 동전은 {}번 컵에 넣습니다...".format(fstcup))
+            await asyncio.sleep(1)
+            await message.channel.send("슥..슥..")
+            await asyncio.sleep(1)
+            await message.channel.send("쉭..쉭")
+            await asyncio.sleep(1)
+            await message.channel.send("슥삭..슥삭")
+            lastcup = random.randint(1,3)
+            await message.channel.send("동전은 1부터 3번 컵중에 어디에 있을까요?")
+            def usercheck(a):
+                return a.author == message.author
+            try:
+                cupinput = await self.client.wait_for('message', check=usercheck, timeout=10.0)
+            except asyncio.TimeoutError:
+
+                await message.channel.send("타임오버! 게임을 종료합니다.")
+            lastcup1 = str(lastcup)
+            a = cupinput.content
+            if a.startswith(lastcup1):
+                await message.channel.send("정답!\n당신이 승리하셨습니다!\n\n당신의 선택 : {}번\n동전의 위치 : {}번".format(a,lastcup))
+            else:
+                await message.channel.send("오답!\n당신이 패배하셨습니다!\n\n당신의 선택 : {}번\n동전의 위치 : {}번".format(a,lastcup))
 
 
 
@@ -1084,9 +1116,7 @@ class chatting(Command):
 
         if message.content.startswith("봇 멜론차트") or message.content.startswith("봇 맬론차트"):
             async with aiohttp.ClientSession() as session:
-
                 async with session.get("https://music.cielsoft.me/api/getchart/melon") as r:
-
                     c = await r.text()
                     c = json.loads(c)
                     embed=discord.Embed(title="🎵 멜론 차트", description="멜론에서 TOP10 차트를 불러왔어요.",color=0x62bf42)
@@ -1110,8 +1140,28 @@ class chatting(Command):
 
 
 
+        if message.content.startswith("봇 날씨"):
+            city = message.content[4:].lstrip()
+            if city == "":
+                embed=discord.Embed(title="⚠ 주의", description="도시가 정의되지 않았습니다.",color=0xd8ef56)
+                await message.channel.send(embed=embed)
 
-
+            else:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&APPID=abad6457b8bd02c6ff6d0f55525a683b&units=metric") as r:
+                            if r.status == 200:
+                                c = await r.json()
+                                embed=discord.Embed(title="⛅ %s 날씨" %(c["name"]), description="%s (구름 %s%%)" %(c["weather"][0]["main"], c["clouds"]["all"]) ,color=0x1dc73a )
+                                embed.add_field(name="온도", value="%s °C" %(c["main"]["temp"]) )
+                                embed.add_field(name="바람", value="%sm/s (%s°)" %(c["wind"]["speed"], c["wind"]["deg"]), inline=False)
+                                embed.add_field(name="기타", value="기압 : %shPa\n습도 : %s%%" %(c["main"]["pressure"], c["main"]["humidity"]))
+                                embed.set_thumbnail(url="http://openweathermap.org/img/w/%s.png" %(c["weather"][0]["icon"]))
+                                embed.set_footer(text="OpenWeatherMap.org")
+                                await message.channel.send(embed=embed)
+                            elif r.status == 404:
+                                embed=discord.Embed(title="⚠ 주의", description="선택하신 도시를 찾지 못했습니다. 다음을 시도해보세요:\n\n1. 지역명 뒤에 시, 광역시 붙이기 (`봇 날씨 부산광역시`)\n2. 주변에 있는 주요 도시로 재시도\n3. 영어로 해보기 (`봇 날씨 tokyo`)"
+                                ,color=0xd8ef56)
+                                await message.channel.send(embed=embed)
 
 
 

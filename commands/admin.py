@@ -173,3 +173,68 @@ class admin(Command):
                 await message.channel.send(embed=embed)
 
 
+        if message.content.startswith('봇 지우기'):
+            if message.author.guild_permissions.administrator == True:
+                a = message.content[6:]
+                if a.startswith("<@"):
+                    mgs = []
+                    tgmgs = []
+                    a = a.replace("<@", "")
+                    a = a.replace(">","")
+                    member = message.guild.get_member(int(a))                        
+                    async for x in message.channel.history(limit = 100):
+                        mgs.append(x)
+                    for i in mgs:
+                        if i.author == member:
+                            tgmgs.append(i)
+                    try:
+                        await message.channel.delete_messages(tgmgs)
+                        await message.delete()
+                        embed=discord.Embed(title="✅ 메시지 삭제", description="%s개의 메시지를 지웠습니다." %len(tgmgs),color=0x1dc73a )
+                        deletemessage = await message.channel.send(embed=embed)
+                        await asyncio.sleep(1)
+                        await deletemessage.delete()
+                    except discord.errors.NotFound:
+                        embed=discord.Embed(title="⚠ 오류 발생", description="일정 메시지의 삭제에 문제가 발생하였습니다.",color=0xff0909 )
+                        await message.channel.send(embed=embed)
+
+                        deletemessage =  await message.channel.send(embed=embed)
+                        await asyncio.sleep(5)
+                        await deletemessage.delete()
+                        
+                        
+                else:
+                    try:
+                        a = a.replace ("봇 지우기", "")
+                        a = a.split()
+
+                        a = [int (i) for i in a]
+                        b = a[0]
+                        mgs = []
+                        number = b
+                            
+                        # if number < 2 or number > 100:
+                        #     embed=discord.Embed(title="⚠ 주의", description="2개 이상, 100개 이하의 메시지만 삭제할 수 있습니다.",color=0xd8ef56)
+                        #     deletemessage = await message.channel.send(embed=embed)
+                        #     await asyncio.sleep(5)
+                        #     await deletemessage.delete()
+                
+                        async for x in message.channel.history(limit = number):
+                            mgs.append(x)
+
+                        await message.channel.delete_messages(mgs)
+                        embed=discord.Embed(title="✅ 메시지 삭제", description="%s개의 메시지를 지웠습니다." %number,color=0x1dc73a )
+                        deletemessage = await message.channel.send(embed=embed)
+                        await asyncio.sleep(1)
+                        await deletemessage.delete()
+                    except Exception as error:
+                        embed=discord.Embed(title="⚠ 오류 발생", description="메시지의 삭제에 문제가 발생하였습니다." ,color=0xff0909 )
+                        deletemessage =  await message.channel.send(embed=embed)
+                        await asyncio.sleep(5)
+                        await deletemessage.delete()
+
+            else:
+                embed=discord.Embed(title="⚠ 주의", description="관리자 권한이 있어야 사용 가능한 명령어입니다.",color=0xd8ef56)
+                await message.channel.send(embed=embed)
+
+    

@@ -84,7 +84,6 @@ class owner(Command):
 
     async def on_message(self,message):
 
-
         if message.content.startswith("봇 경고보기"):
             if not message.mentions == []:
                 user = message.mentions[0]
@@ -111,6 +110,8 @@ class owner(Command):
                 embed=discord.Embed(title="⚠ 주의", description="사용자가 선택되지 않았습니다. 멘션으로 사용자를 설정해주세요.",color=0xd8ef56)
                 await message.channel.send(embed=embed)
 
+        if not message.author.id == 289729741387202560:
+            return
 
 
         if message.content == "봇 재시작":
