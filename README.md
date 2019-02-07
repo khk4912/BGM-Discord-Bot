@@ -25,7 +25,7 @@ requests
 
 ## 필요한 소프트웨어 설치
 [MariaDB](https://downloads.mariadb.org/) - 봇의 DB 프로그램입니다.
-DB를 설치 하신 후에는 PW.py에 
+DB를 설치 하신 후에는 PW.py에 유저네임과 비밀번호를 넣어주세요.
 
 
 ## DB Import 하기
