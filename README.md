@@ -20,7 +20,7 @@ discord-rewrite
 lxml
 beautifulsoup4
 aiomysql
-reuqests
+requests
 ```
 
 ## 필요한 소프트웨어 설치
@@ -29,7 +29,7 @@ DB를 설치 하신 후에는 PW.py에
 
 
 ## DB Import 하기
-먼저, bot DB를 생성해주세요.
+먼저, bot이라는 이름의 DB를 생성해주세요.
 ```sql
 CREATE DATABASE bot;
 ```
