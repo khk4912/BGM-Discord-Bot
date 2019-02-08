@@ -34,3 +34,6 @@ class Command(object, metaclass=CommandInto):
 
     async def on_message(self, message):
         pass
+
+    async def on_member_join(self,member):
+        await self.on_member_join(member)

@@ -5,11 +5,11 @@ import pickle
 import importer
 import datetime
 from send import Command
-from commands.background import * 
+from commands.background import *
+
 
 
 loop = asyncio.get_event_loop()
-
 class Bot(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,7 +31,9 @@ class Bot(discord.Client):
         for i in Command.commands:
             self.load_command.append(i(self))
 
-
+    async def on_member_join(self,member):
+        for i in self.load_command:
+            self.loop.create_task(i.on_member_join(member))
 
     async def on_ready(self):
         print(self.user.name + "으로 봇이 로그인함.")

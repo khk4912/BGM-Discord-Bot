@@ -34,7 +34,6 @@ import requests
 import json 
 import time
 
-
 import TOKEN
 from send import Command
 
@@ -106,6 +105,12 @@ def checkpm25(n):
 
     except:
         return ""
+
+def earthquake(source):
+    if source:
+        return source.text.strip()
+    else:
+        return "정보가 없습니다."
 
 async def nmt(source, target, string):
     headers = {"X-Naver-Client-Id" : TOKEN.papago_nmt_id, "X-Naver-Client-Secret" : TOKEN.papago_nmt_secret}
@@ -511,36 +516,43 @@ class chatting(Command):
             await message.add_reaction("🇴")
             await message.add_reaction("🇾")
 
-        # if message.content == ("봇 지진"):
-        #     async with aiohttp.ClientSession() as session:
-        #         async with session.get("https://m.kma.go.kr/m/eqk/eqk.jsp?type=korea") as r:
+        if message.content == ("봇 지진"):
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://m.kma.go.kr/m/eqk/eqk.jsp?type=korea") as r:
 
-        #             c = await r.text()
-        #             soup = BeautifulSoup(c,"html.parser")
-        #             table = soup.find("table",{"class":"table02"})
-        #             tr = table.find_all("tr")
+                    c = await r.text()
+                    soup = BeautifulSoup(c,"html.parser")
+                    table = soup.find("table",{"class":"table02 style01"})
+                    td = table.find_all("td")
 
-        #             embed=discord.Embed(title="지진 정보", description=a,color=0x62bf42)
-        #             try:
-        #                 img = all[0].find_all("img")[0]['src']
-        #                 img = "http://m.kma.go.kr" + img
-        #                 if img is None: pass
-        #                 else: embed.set_image(url=img)
+                    date = earthquake(td[1])
+                    gyumo = earthquake(td[3])
+                    jindo = earthquake(td[5])
+                    location = earthquake(td[7])
+                    depth = earthquake(td[9])
+                    detail = earthquake(td[10])
 
-
-
-        #             except:
-        #                 pass
-
-        #             embed.add_field(name="규모", value=b, inline=True)
-        #             embed.add_field(name="발생위치", value=c, inline=True)
-        #             embed.add_field(name="발생깊이", value=d, inline=True)
-        #             embed.add_field(name="진도", value=e, inline=True)
-        #             embed.add_field(name="참고사항", value=f, inline=True)
-        #             embed.set_footer(text="기상청")
+                    embed=discord.Embed(title="지진 정보", description=date,color=0x62bf42)
+                    try: 
+                        img = soup.find("div",{"class":"img-center"}).find("img")['src']
+                        img = "http://m.kma.go.kr" + img
+                        if img is None: pass
+                        else: embed.set_image(url=img)
 
 
-        #             await message.channel.send(embed=embed)
+
+                    except:
+                        pass
+
+                    embed.add_field(name="규모", value=gyumo, inline=True)
+                    embed.add_field(name="발생위치", value=location, inline=True)
+                    embed.add_field(name="발생깊이", value=depth, inline=True)
+                    embed.add_field(name="진도", value=jindo, inline=True)
+                    embed.add_field(name="참고사항", value=detail, inline=True)
+                    embed.set_footer(text="기상청")
+
+
+                    await message.channel.send(embed=embed)
 
         if message.content.startswith("봇 골라"):
             if "@everyone" in message.content or "@here" in message.content:
