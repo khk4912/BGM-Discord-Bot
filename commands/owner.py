@@ -139,6 +139,7 @@ class owner(Command):
 
 
         if message.content == "봇 재시작":
+            await message.channel.send("봇을 재시작합니다...")
             restart_bot()
 
 
@@ -181,8 +182,24 @@ class owner(Command):
                 embed=discord.Embed(title="⚠ 주의", description="선택되지 않은 사용자.",color=0xd8ef56)
                 await message.channel.send(embed=embed)
                 
-
-
+        if message.content.startswith("봇 db"):
+            try:
+                query = message.content[4:].lstrip()
+                async with self.conn_pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute(query)
+                        row = await cur.fetchall()
+                if row is None or row == []:
+                    embed=discord.Embed(title="✅ 성공", description="결과값이 없습니다.",color=0x1dc73a )
+                else:
+                    embed=discord.Embed(title="✅ 성공", description="%s" %(str(row)),color=0x1dc73a )
+                await message.channel.send(embed=embed)
+            except Exception as error:
+                embed=discord.Embed(title="⚠ 주의", description="오류 발생!\n```%s```" %(error),color=0xd8ef56)
+                await message.channel.send(embed=embed)
+                
+      
+            
         if message.content.startswith("봇 공지"):
             contents = message.content[4:].lstrip()
             if contents == "" or contents is None:

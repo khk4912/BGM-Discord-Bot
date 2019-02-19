@@ -39,7 +39,7 @@ from send import Command
 ''' Function '''
 
 ''' Main ''' 
-class admin(Command):
+class admin(Command): 
     
     def __init__(self, *args, **kwargs):
         Command.__init__(self, *args, **kwargs)
@@ -48,9 +48,13 @@ class admin(Command):
     async def on_member_join(self,member):
         async with self.conn_pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("""SELECT * FROM server WHERE id = %s""", (member.guild.id))
-                row = await cur.fetchone()
-
+                try:
+                    await cur.execute("""SELECT id, welcome, welcome_message FROM welcome WHERE id = %s""", (member.guild.id))
+                    row = await cur.fetchone()
+                    if not row:
+                        return
+                except:
+                    return
                 if row[1] == 1:
                     tg = row[2]
                     tg = tg.replace("{멘션}", member.mention)
@@ -276,75 +280,83 @@ class admin(Command):
                 await message.channel.send(embed=embed)
 
         if message.content.startswith("봇 웰컴설정") or message.content.startswith("봇 환영설정"):
-            async with self.conn_pool.acquire() as conn:
-                async with conn.cursor() as cur:
-                    await cur.execute("""SELECT * FROM server WHERE id=%s""", (message.guild.id))
-                    row = await cur.fetchone()
-            
-            if row is None or row[1] == 0:
-                embed=discord.Embed(title="📝 웰컴 설정", description="현재 웰컴 메시지가 설정되어 있지 않습니다. 추가하시려면 ✅ 이모티콘을 눌러주세요.")
-                msg = await message.channel.send(embed=embed)
-                await msg.add_reaction("✅")
+            if message.author.guild_permissions.administrator == True:
 
-                def posi_check(reaction, user):
-                    return user == message.author and str(reaction.emoji) == '✅'
+                async with self.conn_pool.acquire() as conn:
+                    async with conn.cursor() as cur:
+                        await cur.execute("""SELECT id, welcome, welcome_message FROM welcome WHERE id=%s""", (message.guild.id))
+                        row = await cur.fetchone()
+                
+                if row is None or row[1] == 0:
+                    embed=discord.Embed(title="📝 웰컴 설정", description="현재 웰컴 메시지가 설정되어 있지 않습니다. 추가하시려면 ✅ 이모티콘을 눌러주세요.")
+                    msg = await message.channel.send(embed=embed)
+                    await msg.add_reaction("✅")
 
-                try:
-                    reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=posi_check)
-                    if str(reaction) == "✅":
-                        edit = True
-                    else:
+                    def posi_check(reaction, user):
+                        return user == message.author and str(reaction.emoji) == '✅'
+
+                    try:
+                        reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=posi_check)
+                        if str(reaction) == "✅":
+                            edit = True
+                        else:
+                            return
+                    except:
+                        await message.channel.send("타임아웃으로 취소되었습니다.")
                         return
-                except:
-                    await message.channel.send("타임아웃으로 취소되었습니다.")
-                    return
 
-            else:
-                embed=discord.Embed(title="📝 웰컴 설정", description=f"현재 웰컴 메시지는 다음과 같습니다.\n```{row[2]}```\n\n 수정하시려면 ✅ 이모티콘을, 제거하시려면 ❌ 이모티콘을 클릭해주세요. ")            
-                msg = await message.channel.send(embed=embed)
-                await msg.add_reaction("✅")
-                await msg.add_reaction("❌")
+                else:
+                    embed=discord.Embed(title="📝 웰컴 설정", description="현재 웰컴 메시지는 다음과 같습니다.\n```%s```\n\n 수정하시려면 ✅ 이모티콘을, 제거하시려면 ❌ 이모티콘을 클릭해주세요. " %(row[2]))
+                    embed.set_footer(text="메시지는 `서버 설정 > NEW MEMEBR MESSAGES CHANNEL`에 보내집니다.")        
+                    msg = await message.channel.send(embed=embed)
+                    await msg.add_reaction("✅")
+                    await msg.add_reaction("❌")
 
 
-                def posi_check2(reaction, user):
-                    return user == message.author and ( str(reaction.emoji) == '✅' or str(reaction.emoji)  == "❌" )
+                    def posi_check2(reaction, user):
+                        return user == message.author and ( str(reaction.emoji) == '✅' or str(reaction.emoji)  == "❌" )
 
-                try:
-                    reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=posi_check2)
-                    if str(reaction) == "✅":
-                        edit = True
-                        print(edit)
+                    try:
+                        reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=posi_check2)
+                        if str(reaction) == "✅":
+                            edit = True
+                            print(edit)
+                        else:
+                            edit = False
+                    except:
+                        await message.channels.send("타임아웃으로 취소되었습니다.")
+                        return
+
+                
+                if edit:
+                    embed=discord.Embed(title="📝 웰컴 설정", description="유저가 들어올때 봇이 보낼 메시지를 설정해주세요. 취소하시려면 `봇 취소` 를 입력하세요.\n\n{멘션} > 유저를 언급합니다.\n{서버이름} > 서버 이름을 표시합니다.")            
+                    await message.channel.send(embed=embed)
+
+                    def check_msg(m):
+                        return m.channel == message.channel and m.author == message.author
+
+                    msg = await self.client.wait_for('message', check=check_msg)
+                    if msg.content == "봇 취소":
+                        await message.channel.send("취소되었습니다.")
                     else:
-                        edit = False
-                except:
-                    await message.channels.send("타임아웃으로 취소되었습니다.")
-                    return
+                        async with self.conn_pool.acquire() as conn:
+                            async with conn.cursor() as cur:
+                                await cur.execute("""INSERT INTO welcome (id, welcome, welcome_message) VALUES (%s, %s, %s)  ON DUPLICATE KEY UPDATE welcome=%s, welcome_message=%s;""", (message.guild.id, 1, msg.content, 1, msg.content))
+                        embed=discord.Embed(title="✅ 웰컴 메시지", description="```%s```\n로 웰컴 메시지가 설정되었습니다." %(msg.content),color=0x1dc73a )
+                        embed.set_footer(text="메시지는 `서버 설정 > NEW MEMEBR MESSAGES CHANNEL`에 보내집니다.")        
 
-            
-            if edit:
-                embed=discord.Embed(title="📝 웰컴 설정", description="유저가 들어올때 봇이 보낼 메시지를 설정해주세요. 취소하시려면 `봇 취소` 를 입력하세요.\n\n{멘션} > 유저를 언급합니다.\n{서버이름} > 서버 이름을 표시합니다.")            
-                await message.channel.send(embed=embed)
-
-                def check_msg(m):
-                    return m.channel == message.channel and m.author == message.author
-
-                msg = await self.client.wait_for('message', check=check_msg)
-                if msg == "봇 취소":
-                    await message.channel.send("취소되었습니다.")
+                        await message.channel.send(embed=embed)
+                        
                 else:
                     async with self.conn_pool.acquire() as conn:
                         async with conn.cursor() as cur:
-                            await cur.execute("""INSERT INTO server (id, welcome, welcome_message) VALUES (%s, %s, %s)  ON DUPLICATE KEY UPDATE welcome=%s, welcome_message=%s;""", (message.guild.id, 1, msg.content, 1, msg.content))
-                    embed=discord.Embed(title="✅ 웰컴 메시지", description=f"```{msg.content}```\n로 웰컴 메시지가 설정되었습니다.",color=0x1dc73a )
-                    await message.channel.send(embed=embed)
+                            await cur.execute("""INSERT INTO welcome (id, welcome, welcome_message) VALUES (%s, %s, %s)  ON DUPLICATE KEY UPDATE welcome='%s';""", (message.guild.id, 0, None, 0))
+                        embed=discord.Embed(title="✅ 웰컴 메시지", description="웰컴 메시지 사용이 중지되었습니다.",color=0x1dc73a )
+                        await message.channel.send(embed=embed)
                     
             else:
-                async with self.conn_pool.acquire() as conn:
-                    async with conn.cursor() as cur:
-                        await cur.execute("""INSERT INTO server (id, welcome, welcome_message) VALUES (%s, %s, %s)  ON DUPLICATE KEY UPDATE welcome='%s';""", (message.guild.id, 0, None, 0))
-                    embed=discord.Embed(title="✅ 웰컴 메시지", description="웰컴 메시지 사용이 중지되었습니다.",color=0x1dc73a )
-                    await message.channel.send(embed=embed)
-                  
+                embed=discord.Embed(title="⚠ 주의", description="관리자 권한이 있어야 사용 가능한 명령어입니다.",color=0xd8ef56)
+                await message.channel.send(embed=embed)
 
 
 

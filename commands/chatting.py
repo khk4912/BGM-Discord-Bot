@@ -107,9 +107,10 @@ def checkpm25(n):
         return ""
 
 def earthquake(source):
+    source = source.text.strip()
     if source:
-        return source.text.strip()
-    else:
+        return source
+    elif source == "" or source is None:
         return "정보가 없습니다."
 
 async def nmt(source, target, string):
@@ -261,6 +262,7 @@ class chatting(Command):
                 # embed.add_field(name="봇 도움 게임", value="봇에 있는 게임 기능에 관련된 도움말입니다. 자세한 명령어는 '봇 도움 게임'을 참고하세요.", inline=True)
                 embed.add_field(name="봇 도움 기능", value="봇에 있는 기능에 대해 알려드립니다.", inline=True)
                 embed.add_field(name="봇 도움 어드민", value="어드민이 서버 관리를 위해 사용 가능한 기능입니다. 자세한 명령어는 '봇 도움 어드민'을 참고하세요.", inline=True)
+                embed.add_field(name="더 많은 기능은?", value="문의는 BGM#0970으로 친추 후 DM해주세요!", inline=False)
 
                 
                 embed.set_footer(text="도움 명령어에 없는 명령어가 있을 수 있습니다.")
@@ -294,6 +296,7 @@ class chatting(Command):
                 embed.add_field(name="봇 afk/잠수 <사유>", value="잠수를 선언합니다. 다시 돌아오면 환영해드립니다.", inline=False)
                 embed.add_field(name="봇 자동번역 <번역할 문장>", value="언어를 자동으로 인식한 후 한국어로 번역합니다.")
                 embed.add_field(name="봇 한글영어번역(영어한글번역, 일어한글번역, 한글일어번역) <번역할 문장>", value="선택한 언어에서 선택한 언어로 번역해줍니다.", inline=False)
+                embed.add_field(name="봇 초대", value="봇의 초대링크를 전송합니다!", inline=False)
 
                 # embed.add_field(name="봇 죽창 <개수>", value="죽창을 표시합니다. 60개가 최대입니다.",inline=False)
                 embed.add_field(name="봇 지진", value="지진 정보를 표시합니다.", inline=False)
@@ -301,18 +304,18 @@ class chatting(Command):
                 embed.add_field(name="봇 조의 표해", value="봇이 조의를 표해줍니다.", inline=False)
                 embed.add_field(name="봇 고양이/냥이", value="랜덤으로 고양이짤을 보여준다냐!", inline=False)
                 embed.add_field(name="봇 강아지", value="랜덤으로 강아지짤을 보여준다멍.", inline=False)
-                # embed.add_field(name="봇 원주율 구해", value="원주율을 1997자리 까지 구합니다.", inline=False)
                 embed.add_field(name="봇 리마인더 <시간(초)> <사유(선택)>", value="선택한 초 있다가 알려드려요.", inline=False)
+                embed.add_field(name="봇 링크축약 [축약할 주소]", value="네이버 서비스를 이용하여 긴 주소를 짧게 만들어 드립니다.", inline=False)
 
                 embed.add_field(name="봇 기상특보", value="기상특보 정보를 표시합니다.", inline=False)
                 embed.add_field(name="봇 미세먼지", value="미세먼지 정보를 표시합니다.", inline=False)
                 # embed.add_field(name="봇 11번가 검색 <검색어>", value="11번가에서 검색해, 정보를 불러옵니다.", inline=False)
                 embed.add_field(name="봇 초미세먼지", value="초미세먼지 정보를 표시합니다.", inline=False)
-                embed.add_field(name="봇 멜론차트", value="멜론 TOP10을 보여줍니다.", inline=False)
+                # embed.add_field(name="봇 멜론차트", value="멜론 TOP10을 보여줍니다.", inline=False)
                 embed.add_field(name="봇 가사검색", value="선택한 노래의 가사를 검색해줍니다. 가끔 다른 노래 가사가 들어갈수도 있으니 자세히 보기로 확인해보시는것도 좋아요!", inline=False)
                 embed.add_field(name="봇 날씨 [도시]", value="선택한 도시의 현재 날씨를 보여줍니다.", inline=False)
 
-                embed.add_field(name="더 많은 기능은?", value="궁금증이나 도움 명령어에 수록되지 않은 명령어는 BGM#0970으로 친추후 DM해주세요!", inline=False)
+                embed.add_field(name="더 많은 기능은?", value="문의는 BGM#0970으로 친추 후 DM해주세요!", inline=False)
 
                 # embed.add_field(name="봇 명언은?", value="명언을 표시합니다. (명언인지 확인안됨)", inline=False)
                 # embed.add_field(name="봇 서버 인원은?", value="채팅한 서버의 인원을 표시합니다.", inline=False)
@@ -336,9 +339,9 @@ class chatting(Command):
                 embed.add_field(name="봇 커스텀 수정 <수정할 명령어>/<봇의 대답>", value="이미 추가된 커스텀 명령어를 수정합니다. 명령어와 봇의 대답 구분에는 꼭 /가 필요합니다.", inline=False)
                 embed.add_field(name="봇 커스텀 보기", value="해당 서버의 모든 커스텀 명령어를 출력합니다.", inline=False)
                 embed.add_field(name="봇 커스텀 삭제 [삭제할 커스텀 명령어]", value="해당 서버의 커스텀 명령어중 입력한 명령어를 삭제합니다.", inline=False)
-
                 embed.add_field(name="봇 커스텀 초기화", value="해당 서버의 모든 커스텀 명령어를 삭제합니다.", inline=False)
-                embed.add_field(name="더 많은 기능은?", value="궁금증이나 도움 명령어에 수록되지 않은 명령어는 BGM#0970으로 친추후 DM해주세요!", inline=False)
+                embed.add_field(name="봇 웰컴설정/환영설정", value="서버에 새로운 사람이 오면 보낼 메시지를 설정합니다.", inline=False)
+                embed.add_field(name="더 많은 기능은?", value="문의는 BGM#0970으로 친추 후 DM해주세요!", inline=False)
 
                 embed.set_footer(text="도움 명령어에 없는 명령어가 있을 수 있습니다.")
 
@@ -359,6 +362,10 @@ class chatting(Command):
             else:
                 embed=discord.Embed(title="⚠ 주의", description="해당 도움 그룹이 없습니다. 존재하는 도움 그룹은 \n``` 기능, 어드민``` 입니다.",color=0xd8ef56)
                 await message.channel.send(embed=embed)
+
+        if message.content.startswith("봇 초대"):
+            embed=discord.Embed(title="✅ 봇 초대", description="초대하시려면 [여기](https://discordapp.com/oauth2/authorize?client_id=351733476141170688&scope=bot&permissions=2146958847)를 클릭해주세요!",color=0x1dc73a )
+            await message.channel.send(embed=embed)
 
         if message.content.startswith('봇 안녕') or message.content.startswith('봇 안냥') or message.content.startswith("봇 ㅎㅇ") or message.content.startswith("봇 gd") or message.content.startswith("봇 hello"):
             a = self.client.user.id
@@ -507,6 +514,7 @@ class chatting(Command):
             response = ["**싫음**","너나 해 이 악마야","`봇 히오스는?` 계속 쳐봐!","시공이 재밌냐?","싫음.","시 공 시 렁"]
             response = random.choice(response)
             await message.channel.send(response)
+        #popcorn
 
         if message.content.endswith("봇 조의 표해"):
             await message.add_reaction("❌")
@@ -744,13 +752,15 @@ class chatting(Command):
                                     c = await r.text()
                                     soup = BeautifulSoup(c,"html.parser")
                                     f = soup.find("div",{"id":"lyricText"}).text
+                                    title = soup.find("span",{"class":"ico_play"}).text
                                     f = f[:100]
-                                    embed=discord.Embed(title="🎵 " + a + "에 대한 가사 검색", description="\n" + f +"...", color=0x237ccd)
+                                    embed=discord.Embed(title="🎵 " + title + "의 가사", description="\n" + f +"...", color=0x237ccd)
                                     embed.add_field(name="자세히 보기", value=load, inline=False)
-
+                                    embed.set_footer(text="네이버 뮤직")
                                     await message.channel.send(embed=embed)
+
             except Exception as error:
-                embed=discord.Embed(title="❌ 오류", description="오류가 발생하였습니다.\n%s",color=0xff0909)
+                embed=discord.Embed(title="❌ 오류", description="오류가 발생하였습니다.\n%s" %(error),color=0xff0909)
                 await message.channel.send(embed=embed)
 
 
@@ -1065,30 +1075,30 @@ class chatting(Command):
                 embed.set_thumbnail(url=message.guild.icon_url)
                 await message.channel.send(embed=embed)
 
-        if message.content.startswith("봇 컵게임"):
-            fstcup = random.randint(1,3)
-            await message.channel.send("봇이 컵 3개를 섞습니다. 동전은 {}번 컵에 넣습니다...".format(fstcup))
-            await asyncio.sleep(1)
-            await message.channel.send("슥..슥..")
-            await asyncio.sleep(1)
-            await message.channel.send("쉭..쉭")
-            await asyncio.sleep(1)
-            await message.channel.send("슥삭..슥삭")
-            lastcup = random.randint(1,3)
-            await message.channel.send("동전은 1부터 3번 컵중에 어디에 있을까요?")
-            def usercheck(a):
-                return a.author == message.author
-            try:
-                cupinput = await self.client.wait_for('message', check=usercheck, timeout=10.0)
-            except asyncio.TimeoutError:
+        # if message.content.startswith("봇 컵게임"):
+        #     fstcup = random.randint(1,3)
+        #     await message.channel.send("봇이 컵 3개를 섞습니다. 동전은 {}번 컵에 넣습니다...".format(fstcup))
+        #     await asyncio.sleep(1)
+        #     await message.channel.send("슥..슥..")
+        #     await asyncio.sleep(1)
+        #     await message.channel.send("쉭..쉭")
+        #     await asyncio.sleep(1)
+        #     await message.channel.send("슥삭..슥삭")
+        #     lastcup = random.randint(1,3)
+        #     await message.channel.send("동전은 1부터 3번 컵중에 어디에 있을까요?")
+        #     def usercheck(a):
+        #         return a.author == message.author
+        #     try:
+        #         cupinput = await self.client.wait_for('message', check=usercheck, timeout=10.0)
+        #     except asyncio.TimeoutError:
 
-                await message.channel.send("타임오버! 게임을 종료합니다.")
-            lastcup1 = str(lastcup)
-            a = cupinput.content
-            if a.startswith(lastcup1):
-                await message.channel.send("정답!\n당신이 승리하셨습니다!\n\n당신의 선택 : {}번\n동전의 위치 : {}번".format(a,lastcup))
-            else:
-                await message.channel.send("오답!\n당신이 패배하셨습니다!\n\n당신의 선택 : {}번\n동전의 위치 : {}번".format(a,lastcup))
+        #         await message.channel.send("타임오버! 게임을 종료합니다.")
+        #     lastcup1 = str(lastcup)
+        #     a = cupinput.content
+        #     if a.startswith(lastcup1):
+        #         await message.channel.send("정답!\n당신이 승리하셨습니다!\n\n당신의 선택 : {}번\n동전의 위치 : {}번".format(a,lastcup))
+        #     else:
+        #         await message.channel.send("오답!\n당신이 패배하셨습니다!\n\n당신의 선택 : {}번\n동전의 위치 : {}번".format(a,lastcup))
 
 
 

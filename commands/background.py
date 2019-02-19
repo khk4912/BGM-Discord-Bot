@@ -33,14 +33,10 @@ async def change_activity(self):
     await self.wait_until_ready()
     while not self.is_closed():
 
-        number = 0
-        user = 0
 
-        for s in self.guilds:
-            number = number + 1
+        number = len(self.guilds)
+        user = len(self.users)
 
-            if not s.unavailable:
-                user += s.member_count
         await self.change_presence(activity=discord.Game(name="%s개의 서버 / %s Servers"%(number,number)))
         await asyncio.sleep(30)
         await self.change_presence(activity=discord.Game(name="%s명의 유저 / %s Users"%(user, user)))
