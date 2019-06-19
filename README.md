@@ -3,7 +3,7 @@
 
 ## 봇 초대하기
 [클릭](https://discordapp.com/oauth2/authorize?client_id=351733476141170688&scope=bot&permissions=2146958847)
-
+[디스코드 지원서버](https://discord.gg/aNktUZ7)
 
 ## 개발
 * [BGM(khk4912)](https://github.com/khk4912)
