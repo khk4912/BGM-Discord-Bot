@@ -1,209 +1,179 @@
 import discord
 from discord.ext import commands
-import TOKEN
 import asyncio
-import PW
-import aiomysql
-import datetime
-import traceback
 import sys
-import background
+import traceback
+import aiomysql
+import PW
+import TOKEN
+import logging
+import json
 import pickle
-import logging 
+import datetime
+from utils.embed import Embed
+from utils.background import change_activity
+from logs import Logs
+from colorama import init, Fore, Back, Style
 
 
-async def set_db():
-    global conn_pool
-    conn_pool = await aiomysql.create_pool(host='127.0.0.1', user=PW.db_user, password=PW.db_pw, db='bot', autocommit=True, loop=loop,
-                                                minsize=2, maxsize=3, charset="utf8mb4")
+class Main(commands.AutoShardedBot):
+    def __init__(self):
+        super().__init__(command_prefix=["봇 ", "봇"], shard_count=2)
+        self.logger = Logs.create_logger(self)
+        self.main_logger = Logs.main_logger()
 
+        self.loop = asyncio.get_event_loop()
+        self.loop.create_task(change_activity(self))
+        self.loop.create_task(self.set_db())
 
-async def check_cc(message):
+        self.afk = {}
+        self.blacklist = []
+        additional_commands = [
+            self.add_to_black,
+            self.rest_black,
+            self.show_black,
+        ]
 
-    command = message.content[2:]
-    async with conn_pool.acquire() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute("""SELECT * FROM cc WHERE server = %s AND command = %s""", (str(message.guild.id), command))
-            row = await cur.fetchone()
-            # print(row)
-            if not row is None:
-                await message.channel.send(row[2])
+        with open("blacklist.pickle", "rb") as f:
+            self.blacklist = pickle.load(f)
 
-def is_owner():
-    async def predicate(ctx):
-        return ctx.author.id == 289729741387202560
-    return commands.check(predicate)
+        with open("argument_help.json", "r", encoding="utf-8") as f:
+            self.argument_data = json.load(f)
 
-async def message_helper(message):
-    if message.guild is None:
-        message_channel = "DM"
-        message_channel_id = "DM"
-        guild = "DM"
-        guild_id = "DM"
-    else:
-        message_channel = message.channel.name
-        message_channel_id = message.channel.id
-        guild = message.guild.name
-        guild_id = message.guild.id
+        for i in TOKEN.initial_extensions:
+            self.load_extension(i)
 
-    text = """
-{}
-Server : {} ({})
-Channel : {} ({})
-User : {}
-Content : {}
-Embed : {}
-File : {}
-             """.format(datetime.datetime.now(), guild, guild_id,
-                        message_channel, message_channel_id, message.content,
-                        message.author.name + "#" + message.author.discriminator, message.embeds,
-                        message.attachments)
-    print(text)
-formatter = logging.Formatter('[%(levelname)s]: %(message)s')
+        for cmd in additional_commands:
+            self.add_command(cmd)
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
-filehandler = logging.FileHandler('bot_log.txt', 'w')
-streamhandler = logging.StreamHandler()
-filehandler.setFormatter(formatter)
-streamhandler.setFormatter(formatter)
+    async def set_db(self):
+        self.conn_pool = await aiomysql.create_pool(
+            host="127.0.0.1",
+            user=PW.db_user,
+            password=PW.db_pw,
+            db="bot",
+            autocommit=True,
+            loop=self.loop,
+            minsize=2,
+            maxsize=5,
+            charset="utf8mb4",
+        )
 
-logger.addHandler(filehandler)
-logger.addHandler(streamhandler)
+    async def on_ready(self):
+        self.logger.info("Bot Ready.")
 
-bot = commands.AutoShardedBot(command_prefix=["봇 ", "봇"])
-loop = asyncio.get_event_loop()
-conn_pool_task = loop.create_task(set_db())
-backgruond_task = loop.create_task(background.change_activity(bot))
-afk = {}
-blacklist = []
-with open('blacklist.pickle','rb') as f:
-   blacklist = pickle.load(f)
+    async def check_cc(self, message):
 
-@bot.event
-async def on_ready():
-    print("=====")
-    print("{}로 로그인 완료!".format(bot.user.name))
-    print("=====")
+        command = message.content[2:]
+        async with self.conn_pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    """SELECT * FROM cc WHERE server = %s AND command = %s""",
+                    (str(message.guild.id), command),
+                )
+                row = await cur.fetchone()
+                # print(row)
+                if not row is None:
+                    await message.channel.send(row[2])
 
-
-# @bot.event
-# async def on_command_error(ctx, error):
-#     if isinstance(error, commands.CheckFailure):
-#         return
-@bot.event
-async def on_member_join(member):
-    loop = asyncio.get_event_loop()
-    conn = await aiomysql.connect(host='127.0.0.1',
-                                  user=PW.db_user, password=PW.db_pw, db="bot", autocommit=True,
-                                  loop=loop, charset="utf8mb4")
-
-    async with conn.cursor() as cur:
-        try:
-            await cur.execute("""SELECT id, welcome, welcome_message FROM welcome WHERE id = %s""", (member.guild.id))
-            row = await cur.fetchone()
-            if not row:
-                return
-        except:
+    async def on_message(self, message):
+        if message.author.bot or str(message.author.id) in self.blacklist:
             return
-        if row[1] == 1:
-            tg = row[2]
-            tg = tg.replace("{멘션}", member.mention)
-            tg = tg.replace("{서버이름}", member.guild.name)
-            await member.guild.system_channel.send(tg)
+
+        await self.process_commands(message)
 
 
-@bot.event
-async def on_message(message):
+        if message.content.startswith("봇 "):
+            try:
+                await self.check_cc(message)
+            except:
+                pass
 
-    await message_helper(message)
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CheckFailure):
+            return
 
-    if message.author.bot or str(message.author.id) in blacklist:
-        return
+        if isinstance(error, commands.errors.CommandNotFound):
+            return
 
-    if message.author.id in afk.keys():    
-        get = afk[message.author.id]
-        embed=discord.Embed(title="👐 잠수 종료!", description="<@{}>님이 잠수를 종료하셨습니다.".format(message.author.id), color=get["color"], timestamp=get["utcstarttime"])
-        embed.add_field(name="잠수 사유", value="{0}".format(get["reason"]), inline=True)
-        del afk[message.author.id]
-        await message.channel.send(embed=embed)
+        if isinstance(error, commands.CommandOnCooldown):
+            embed = discord.Embed(
+                title="⚠ 쿨타임 중!",
+                description="{}초 뒤에 재시도하세요.".format(int(error.retry_after)),
+                color=0xD8EF56,
+            )
+            return await ctx.send(embed=embed)
 
-    if not message.author.bot:
-        await bot.process_commands(message)
+        if isinstance(error, commands.CommandInvokeError):
+            original = error.original
+            if isinstance(original, discord.Forbidden):
+                embed = Embed.warn(
+                    "주의",
+                    "봇의 권한이 부족하여 {} 명령어를 수행할 수 없어요.".format(ctx.command.name),
+                )
+                return await ctx.send(embed=embed)
 
-    if message.content.startswith("봇 "):
-        await check_cc(message)
+        if (
+            isinstance(error, commands.BadArgument)
+            or isinstance(error, commands.BadUnionArgument)
+            or isinstance(error, commands.MissingRequiredArgument)
+        ):
+            name = str(ctx.command)
+            try:
+                embed = Embed.warn(
+                    "주의",
+                    "잘못된 형식으로 명령어를 사용했어요. \n올바른 사용 : `봇 {} {}`".format(
+                        name, self.argument_data[name]
+                    ),
+                )
+                return await ctx.send(embed=embed)
+            except KeyError:
+                embed = Embed.warn("주의", "잘못된 형식으로 명령어를 사용했어요.")
+                return await ctx.send(embed=embed)
+        embed = Embed.error(
+            "이런!",
+            "{} 명령어 수행 중 핸들링 되지 않은 오류가 발생했어요!\n```{}```\n지속적인 문제 발생 시 `봇 문의` 명령어로 문의해주세요.".format(
+                ctx.command.name, error
+            ),
+        )
+        await ctx.send(embed=embed)
+        print(
+            "Ignoring exception in command {}".format(ctx.command),
+            file=sys.stderr,
+        )
+        traceback.print_exception(
+            type(error), error, error.__traceback__, file=sys.stderr
+        )
+        self.logger.warning(
+            "Error {} occured in command {}".format(
+                type(error), ctx.command.name
+            )
+        )
 
+    async def on_member_join(self, member):
 
-
-@bot.command(name="잠수", aliases=["afk"], rest_is_raw=True)
-async def afk_define(ctx, *, args):
-    if args is None or args == "":
-        reason = "사유가 없습니다."
-    else:
-        reason = args.lstrip()
-
-    try:
-        author_color = ctx.author.colour
-    except:
-        author_color = 0x237ccd
-    afk_start_time = datetime.datetime.now()
-    afk_start_utc_time = datetime.datetime.utcnow()
-    afk[ctx.author.id] = {"reason": reason, "starttime": afk_start_time,
-                          "utcstarttime": afk_start_utc_time, "color": author_color}
-    embed = discord.Embed(title="💤 잠수", description="<@{0}>님이 잠수를 시전하셨습니다.\n".format(
-        ctx.author.id), color=author_color)
-    embed.add_field(name="잠수 사유", value="{0}".format(reason), inline=False)
-    embed.set_footer(text="{0}\n".format(afk_start_time))
-    await ctx.send(embed=embed)
-    
-@bot.command(name="블랙추가", hidden=True)
-@is_owner()
-async def add_to_black(ctx):
-    user = str(ctx.message.mentions[0].id)
-    blacklist.append(user)
-    thefile = open('blacklist.pickle', mode='w+')
-    thefile.write("")
-    thefile.close
-    try:
-        with open('blacklist.pickle','ab') as f:
-            pickle.dump(blacklist,f)
-    except:
-        pass
-
-    await ctx.send("<@%s>를 블랙리스트에 추가했어." %user)
-            
-
-    
-@bot.command(name="블랙삭제", hidden=True)
-@is_owner()
-async def rest_black(ctx):
-    a = ctx.message.content
-    a = a[7:]
-    a = a.replace("<", "")
-    a = a.replace("@", "")
-    a = a.replace("!", "")
-    a = a.replace(">", "")
-    blacklist.remove(a)
-    f = open("blacklist.pickle", mode="w+")
-    f.write("")
-    f.close()
-    try:
-        with open('blacklist.pickle','ab') as f:
-            pickle.dump(blacklist, f)
-    except:
-        pass
-    
-    await ctx.send("<@{}> 블랙에서 삭제함.".format(a) )
-   
-@bot.command(name="블랙보기", hidden=True)
-@is_owner()
-async def show_black(ctx):
-    await ctx.send("블랙리스트 목록 : %s" %blacklist)
-
-
-for i in TOKEN.initial_extensions:
-    bot.load_extension(i)
+        async with self.conn_pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                try:
+                    await cur.execute(
+                        """SELECT id, welcome, welcome_message FROM welcome WHERE id = %s""",
+                        (member.guild.id),
+                    )
+                    row = await cur.fetchone()
+                    if not row:
+                        return
+                except:
+                    return
+                if row[1] == 1:
+                    try:
+                        tg = row[2]
+                        tg = tg.replace("{멘션}", member.mention)
+                        tg = tg.replace("{서버이름}", member.guild.name)
+                        await member.guild.system_channel.send(tg)
+                    except:
+                        pass
 
 
+
+bot = Main()
 bot.run(TOKEN.bot_token)
